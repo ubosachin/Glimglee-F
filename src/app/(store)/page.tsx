@@ -9,6 +9,7 @@ import { getActiveBanners } from "@/lib/services/banners";
 import { getCMSContent, getReviews } from "@/lib/services/storeDb";
 import { Product, Category, HomepageCMS, Banner, Review } from "@/lib/types";
 import { ProductSection } from "@/components/product/ProductSection";
+import { ProductGrid } from "@/components/product/ProductGrid";
 import { QuickViewModal } from "@/components/product/QuickViewModal";
 import { Container } from "@/components/ui/Container";
 import { CategorySkeleton } from "@/components/ui/LoadingSkeletons";
@@ -298,7 +299,44 @@ export default function HomePage() {
         </section>
       )}
 
-      {/* 3. BESTSELLERS SECTION */}
+      {/* 3. ALL PRODUCTS COLLECTION */}
+      {products.length > 0 && (
+        <section className="py-2 sm:py-6">
+          <Container size="full" className="max-w-[1536px] px-4 sm:px-6 lg:px-8">
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-6 sm:mb-8 gap-3">
+              <div className="space-y-1">
+                <span className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-rose-600 bg-rose-50 px-2.5 py-0.5 rounded-full border border-rose-100">
+                  <Sparkles className="w-3 h-3 text-rose-500" />
+                  <span>Full Collection</span>
+                </span>
+                <h2 className="text-xl sm:text-2xl lg:text-3xl font-black text-stone-900 tracking-tight">
+                  All Curated Gifts & Keepsakes
+                </h2>
+                <p className="text-xs sm:text-sm text-stone-500 max-w-xl leading-relaxed">
+                  Browse our complete handcrafted gifting collection — from custom resin keepsakes to luxury curated boxes.
+                </p>
+              </div>
+
+              <Link
+                href="/shop"
+                className="text-xs sm:text-sm font-bold text-rose-600 hover:text-rose-700 flex items-center gap-1 transition-colors group self-end sm:self-auto"
+              >
+                <span>Browse Full Catalog</span>
+                <ArrowRight className="w-4 h-4 transform group-hover:translate-x-0.5 transition-transform" />
+              </Link>
+            </div>
+
+            <ProductGrid
+              products={products}
+              loading={loading}
+              columns={4}
+              onQuickView={setQuickViewProduct}
+            />
+          </Container>
+        </section>
+      )}
+
+      {/* 4. BESTSELLERS SECTION */}
       <ProductSection
         title="Bestselling Keepsakes"
         subtitle="Handcrafted gifts most loved and repeatedly gifted across India"
@@ -308,7 +346,7 @@ export default function HomePage() {
         onQuickView={setQuickViewProduct}
       />
 
-      {/* 4. MID PROMOTIONAL BANNER (Dynamic from Database) */}
+      {/* 5. MID PROMOTIONAL BANNER (Dynamic from Database) */}
       {midBanner && (
         <section className="py-4">
           <Container>
@@ -351,7 +389,7 @@ export default function HomePage() {
         </section>
       )}
 
-      {/* 5. PERSONALIZED GIFTS SPOTLIGHT */}
+      {/* 6. PERSONALIZED GIFTS SPOTLIGHT */}
       <ProductSection
         title="Personalized Keepsakes"
         subtitle="Upload photos, engrave dates, and write heartfelt notes onto artisan wood and glass"
@@ -361,7 +399,7 @@ export default function HomePage() {
         onQuickView={setQuickViewProduct}
       />
 
-      {/* 6. BUDGET-FRIENDLY GIFTS SECTIONS */}
+      {/* 7. BUDGET-FRIENDLY GIFTS SECTIONS */}
       <ProductSection
         title="Pocket-Friendly Gifts Under ₹499"
         subtitle="Thoughtful mini hampers, seed-embedded cards, and scented wax melts"
@@ -378,7 +416,7 @@ export default function HomePage() {
         onQuickView={setQuickViewProduct}
       />
 
-      {/* 7. PINCODE DELIVERY ESTIMATOR */}
+      {/* 8. PINCODE DELIVERY ESTIMATOR */}
       <section className="py-6">
         <Container size="md">
           <div className="bg-white rounded-3xl border border-stone-200/90 p-6 sm:p-10 shadow-sm text-center space-y-4">
@@ -421,7 +459,7 @@ export default function HomePage() {
         </Container>
       </section>
 
-      {/* 8. AUTHENTIC REVIEWS SECTION */}
+      {/* 9. AUTHENTIC REVIEWS SECTION */}
       {reviews.length > 0 && (
         <section className="py-6">
           <Container>
