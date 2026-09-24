@@ -218,11 +218,11 @@ export default function AdminCategoriesPage() {
               <div>
                 <ImageUpload
                   label="Category Cover Photo"
-                  hint="Upload a photo for this category"
+                  hint="Recommended: 1200 x 800 px (Landscape 3:2 / 16:10) or 800 x 800 px (Square 1:1), JPG / WebP"
                   value={editingCategory.image || ""}
                   onChange={(url) => setEditingCategory({ ...editingCategory, image: url as string })}
                   folder="glimglee/categories"
-                  aspectRatio="square"
+                  aspectRatio="auto"
                 />
               </div>
 
