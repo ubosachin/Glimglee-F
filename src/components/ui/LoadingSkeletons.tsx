@@ -31,11 +31,12 @@ export const ProductGridSkeleton: React.FC<{ count?: number }> = ({ count = 8 })
 
 export const CategorySkeleton: React.FC<{ count?: number }> = ({ count = 6 }) => {
   return (
-    <div className="flex gap-4 overflow-x-auto pb-4 sm:grid sm:grid-cols-3 md:grid-cols-6 sm:overflow-visible">
+    <div className="flex sm:grid sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3.5 sm:gap-4 overflow-x-auto sm:overflow-visible pb-4 sm:pb-0 scrollbar-none">
       {Array.from({ length: count }).map((_, i) => (
-        <div key={i} className="flex-shrink-0 w-24 sm:w-auto text-center space-y-2 animate-pulse">
-          <div className="w-20 h-20 sm:w-24 sm:h-24 mx-auto rounded-full bg-stone-200/80" />
+        <div key={i} className="flex-shrink-0 w-28 sm:w-auto text-center space-y-2 animate-pulse flex flex-col items-center">
+          <div className="w-28 h-28 sm:w-full sm:aspect-square mx-auto rounded-2xl sm:rounded-3xl bg-stone-200/80" />
           <div className="h-3 w-16 mx-auto bg-stone-200 rounded-full" />
+          <div className="h-2.5 w-10 mx-auto bg-stone-100 rounded-full" />
         </div>
       ))}
     </div>
