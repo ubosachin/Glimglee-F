@@ -167,16 +167,29 @@ export default function AdminCategoriesPage() {
 
       {/* Create/Edit Modal */}
       {modalOpen && editingCategory && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4">
           <div
             onClick={() => setModalOpen(false)}
             className="fixed inset-0 bg-stone-900/60 backdrop-blur-sm"
           />
-          <div className="relative z-10 w-full max-w-lg bg-white rounded-3xl p-6 sm:p-8 shadow-2xl space-y-4">
-            <h3 className="text-base font-bold text-stone-900">
-              {editingCategory.name ? "Edit Category" : "Create Gifting Category"}
-            </h3>
-            <form onSubmit={handleSave} className="space-y-4 text-xs">
+          <div className="relative z-10 w-full max-w-lg bg-white rounded-3xl shadow-2xl flex flex-col max-h-[90dvh] overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between px-5 sm:px-7 py-4 border-b border-stone-100 bg-white flex-shrink-0">
+              <h3 className="text-base font-bold text-stone-900">
+                {editingCategory.name ? "Edit Category" : "Create Gifting Category"}
+              </h3>
+              <button
+                type="button"
+                onClick={() => setModalOpen(false)}
+                className="p-1.5 text-stone-400 hover:text-stone-700 hover:bg-stone-100 rounded-full transition-colors"
+                aria-label="Close"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Body (Scrollable) */}
+            <form onSubmit={handleSave} className="flex-1 overflow-y-auto px-5 sm:px-7 py-5 space-y-4 text-xs">
               <div>
                 <label className="block font-bold text-stone-700 mb-1">Category Name *</label>
                 <input
@@ -185,14 +198,14 @@ export default function AdminCategoriesPage() {
                   value={editingCategory.name}
                   onChange={(e) => setEditingCategory({ ...editingCategory, name: e.target.value })}
                   placeholder="e.g. Festival Specials"
-                  className="w-full px-3 py-2 rounded-xl border border-stone-200 outline-none focus:ring-1 focus:ring-rose-500 font-semibold"
+                  className="w-full px-3 py-2.5 rounded-xl border border-stone-200 outline-none focus:ring-1 focus:ring-rose-500 font-semibold"
                 />
               </div>
 
               <div>
                 <ImageUpload
                   label="Category Cover Photo"
-                  hint="Upload a square high-resolution banner photo for this category"
+                  hint="Upload a photo for this category"
                   value={editingCategory.image || ""}
                   onChange={(url) => setEditingCategory({ ...editingCategory, image: url as string })}
                   folder="glimglee/categories"
@@ -206,44 +219,46 @@ export default function AdminCategoriesPage() {
                   rows={3}
                   value={editingCategory.description}
                   onChange={(e) => setEditingCategory({ ...editingCategory, description: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl border border-stone-200 outline-none focus:ring-1 focus:ring-rose-500"
+                  placeholder="Describe this gifting collection..."
+                  className="w-full px-3 py-2.5 rounded-xl border border-stone-200 outline-none focus:ring-1 focus:ring-rose-500"
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block font-bold text-stone-700 mb-1">Display Sort Order</label>
                   <input
                     type="number"
                     value={editingCategory.order}
                     onChange={(e) => setEditingCategory({ ...editingCategory, order: Number(e.target.value) })}
-                    className="w-full px-3 py-2 rounded-xl border border-stone-200 outline-none focus:ring-1 focus:ring-rose-500"
+                    className="w-full px-3 py-2.5 rounded-xl border border-stone-200 outline-none focus:ring-1 focus:ring-rose-500"
                   />
                 </div>
-                <div className="flex items-center pt-5">
+                <div className="flex items-center sm:pt-6">
                   <label className="flex items-center gap-2 cursor-pointer font-bold text-stone-800">
                     <input
                       type="checkbox"
                       checked={editingCategory.active}
                       onChange={(e) => setEditingCategory({ ...editingCategory, active: e.target.checked })}
-                      className="accent-rose-600"
+                      className="w-4 h-4 accent-rose-600 rounded"
                     />
                     <span>Active in Store</span>
                   </label>
                 </div>
               </div>
 
-              <div className="flex justify-end gap-2 pt-4 border-t border-stone-100">
+              {/* Modal Footer */}
+              <div className="flex items-center justify-end gap-2 pt-4 border-t border-stone-100 flex-shrink-0">
                 <button
                   type="button"
                   onClick={() => setModalOpen(false)}
-                  className="px-4 py-2 rounded-xl border border-stone-200 font-semibold text-stone-600 hover:bg-stone-50"
+                  className="px-4 py-2.5 rounded-xl border border-stone-200 font-semibold text-stone-600 hover:bg-stone-50 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold"
+                  className="px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold transition-colors shadow-sm"
                 >
                   Save Category
                 </button>

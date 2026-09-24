@@ -460,7 +460,7 @@ function ShopContent() {
       </Container>
 
       {/* MOBILE STICKY FLOATING ACTION BAR: [ Filter (N) ] and [ Sort ] */}
-      <div className="lg:hidden fixed bottom-4 inset-x-4 z-40 flex items-center gap-2 max-w-sm mx-auto">
+      <div className="lg:hidden fixed bottom-[max(1rem,env(safe-area-inset-bottom))] inset-x-4 z-40 flex items-center gap-2 max-w-sm mx-auto">
         <button
           onClick={() => setMobileFilterOpen(true)}
           className="flex-1 py-3 px-4 rounded-2xl bg-stone-900 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-xl hover:bg-stone-800 transition-colors"
@@ -485,7 +485,7 @@ function ShopContent() {
             onClick={() => setMobileFilterOpen(false)}
             className="fixed inset-0 bg-stone-900/60 backdrop-blur-xs"
           />
-          <div className="fixed inset-x-0 bottom-0 max-h-[85vh] bg-white rounded-t-3xl shadow-2xl p-6 z-10 overflow-y-auto flex flex-col justify-between animate-in slide-in-from-bottom duration-200">
+          <div className="fixed inset-x-0 bottom-0 max-h-[88dvh] bg-white rounded-t-3xl shadow-2xl p-5 sm:p-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] z-10 overflow-y-auto flex flex-col justify-between animate-in slide-in-from-bottom duration-200">
             <div className="space-y-6">
               <div className="flex items-center justify-between pb-3 border-b border-stone-100">
                 <h3 className="font-black text-base text-stone-900">Refine Gifts</h3>
@@ -590,7 +590,7 @@ function ShopContent() {
             onClick={() => setMobileSortOpen(false)}
             className="fixed inset-0 bg-stone-900/60 backdrop-blur-xs"
           />
-          <div className="fixed inset-x-0 bottom-0 bg-white rounded-t-3xl shadow-2xl p-6 z-10 animate-in slide-in-from-bottom duration-200 space-y-4">
+          <div className="fixed inset-x-0 bottom-0 max-h-[85dvh] overflow-y-auto bg-white rounded-t-3xl shadow-2xl p-5 sm:p-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] z-10 animate-in slide-in-from-bottom duration-200 space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-stone-100">
               <h3 className="font-black text-base text-stone-900">Sort Gifts By</h3>
               <button

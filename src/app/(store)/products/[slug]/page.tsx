@@ -758,7 +758,7 @@ export default function ProductDetailPage() {
       </Container>
 
       {/* MOBILE STICKY BOTTOM ACTION BAR (Section 26) */}
-      <div className="md:hidden fixed bottom-0 inset-x-0 bg-white/95 backdrop-blur-md border-t border-stone-200 p-3 z-40 shadow-2xl flex items-center justify-between gap-3">
+      <div className="md:hidden fixed bottom-0 inset-x-0 bg-white/95 backdrop-blur-md border-t border-stone-200 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] z-40 shadow-2xl flex items-center justify-between gap-3">
         <div>
           <span className="text-[9px] uppercase font-bold text-stone-400 block leading-tight">Total</span>
           <span className="text-base font-black text-stone-900 font-mono">
@@ -770,14 +770,14 @@ export default function ProductDetailPage() {
           <button
             onClick={handleAddToCart}
             disabled={product.inventory === 0}
-            className="flex-1 min-h-[44px] py-2.5 px-3 rounded-xl bg-stone-900 text-white font-bold text-xs active:bg-stone-800 disabled:opacity-50"
+            className="flex-1 min-h-[44px] py-2.5 px-3 rounded-xl bg-stone-900 text-white font-bold text-xs active:bg-stone-800 disabled:opacity-50 transition-colors"
           >
             Add to Bag
           </button>
           <button
             onClick={handleBuyNow}
             disabled={product.inventory === 0}
-            className="flex-1 min-h-[44px] py-2.5 px-3 rounded-xl bg-rose-600 text-white font-bold text-xs active:bg-rose-700 disabled:opacity-50 shadow-md shadow-rose-600/20"
+            className="flex-1 min-h-[44px] py-2.5 px-3 rounded-xl bg-rose-600 text-white font-bold text-xs active:bg-rose-700 disabled:opacity-50 shadow-md shadow-rose-600/20 transition-colors"
           >
             Buy Now
           </button>
@@ -786,19 +786,26 @@ export default function ProductDetailPage() {
 
       {/* Review Submission Modal */}
       {showReviewModal && (
-        <div className="fixed inset-0 z-50 bg-stone-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 space-y-4 shadow-2xl">
-            <div className="flex items-center justify-between pb-3 border-b border-stone-100">
+        <div className="fixed inset-0 z-50 bg-stone-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
+          <div
+            onClick={() => setShowReviewModal(false)}
+            className="fixed inset-0"
+          />
+          <div className="relative z-10 bg-white rounded-3xl max-w-md w-full shadow-2xl flex flex-col max-h-[90dvh] overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between px-5 sm:px-7 py-4 border-b border-stone-100 bg-white flex-shrink-0">
               <h3 className="font-black text-base text-stone-900">Review This Gift</h3>
               <button
+                type="button"
                 onClick={() => setShowReviewModal(false)}
-                className="p-1 text-stone-400 hover:text-stone-700"
+                className="p-1.5 text-stone-400 hover:text-stone-700 hover:bg-stone-100 rounded-full transition-colors"
+                aria-label="Close"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleReviewSubmit} className="space-y-4 text-xs">
+            <form onSubmit={handleReviewSubmit} className="flex-1 overflow-y-auto px-5 sm:px-7 py-5 space-y-4 text-xs">
               <div>
                 <label className="font-bold text-stone-700 block mb-1">Your Rating</label>
                 <div className="flex gap-2">
@@ -827,7 +834,7 @@ export default function ProductDetailPage() {
                   value={newTitle}
                   onChange={(e) => setNewTitle(e.target.value)}
                   placeholder="e.g. Gorgeous anniversary frame!"
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 focus:outline-none focus:border-rose-500"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 focus:outline-none focus:border-rose-500 font-semibold"
                 />
               </div>
 
@@ -839,21 +846,21 @@ export default function ProductDetailPage() {
                   value={newComment}
                   onChange={(e) => setNewComment(e.target.value)}
                   placeholder="Tell other gift givers about the packaging, quality, and recipient reaction..."
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 focus:outline-none focus:border-rose-500"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 focus:outline-none focus:border-rose-500 leading-relaxed"
                 />
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-2">
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-stone-100 flex-shrink-0">
                 <button
                   type="button"
                   onClick={() => setShowReviewModal(false)}
-                  className="px-4 py-2 rounded-xl text-stone-600 font-bold"
+                  className="px-4 py-2.5 rounded-xl text-stone-600 font-bold hover:bg-stone-50 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 bg-rose-600 text-white font-bold rounded-xl shadow-sm"
+                  className="px-5 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl shadow-sm transition-colors"
                 >
                   Submit Review
                 </button>

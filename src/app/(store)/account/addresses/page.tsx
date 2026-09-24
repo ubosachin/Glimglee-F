@@ -14,6 +14,7 @@ import {
   Briefcase,
   Phone,
   Sparkles,
+  X,
 } from "lucide-react";
 
 interface SavedAddress {
@@ -264,13 +265,24 @@ export default function CustomerAddressesPage() {
 
       {/* Add / Edit Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 z-50 bg-stone-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 space-y-6 shadow-2xl border border-stone-200">
-            <h3 className="text-lg font-black text-stone-900">
-              {editingId ? "Edit Delivery Address" : "Add New Delivery Address"}
-            </h3>
+        <div className="fixed inset-0 z-50 bg-stone-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
+          <div className="bg-white rounded-3xl max-w-lg w-full shadow-2xl border border-stone-200 flex flex-col max-h-[90dvh] overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between px-5 sm:px-7 py-4 border-b border-stone-100 bg-white flex-shrink-0">
+              <h3 className="text-base sm:text-lg font-black text-stone-900">
+                {editingId ? "Edit Delivery Address" : "Add New Delivery Address"}
+              </h3>
+              <button
+                type="button"
+                onClick={() => setShowAddModal(false)}
+                className="p-1.5 text-stone-400 hover:text-stone-700 hover:bg-stone-100 rounded-full transition-colors"
+                aria-label="Close"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4 text-xs">
+            <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto px-5 sm:px-7 py-5 space-y-4 text-xs">
               <div className="grid grid-cols-3 gap-2">
                 {(["Home", "Work", "Other"] as const).map((t) => (
                   <button
@@ -385,17 +397,17 @@ export default function CustomerAddressesPage() {
                 <span className="font-semibold text-stone-700">Make this my default shipping address</span>
               </label>
 
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-stone-100">
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-stone-100 flex-shrink-0">
                 <button
                   type="button"
                   onClick={() => setShowAddModal(false)}
-                  className="px-4 py-2 rounded-xl text-stone-600 font-bold hover:bg-stone-50"
+                  className="px-5 py-2.5 rounded-xl border border-stone-200 text-stone-600 font-bold hover:bg-stone-50 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-stone-900 hover:bg-stone-800 text-white font-bold"
+                  className="px-6 py-2.5 rounded-xl bg-stone-900 hover:bg-stone-800 text-white font-bold transition-colors shadow-sm"
                 >
                   Save Address
                 </button>

@@ -46,17 +46,17 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({ product, onClose
       />
 
       {/* Modal Card */}
-      <div className="relative z-10 w-full max-w-3xl bg-white rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+      <div className="relative z-10 w-full max-w-3xl max-h-[92dvh] overflow-y-auto bg-white rounded-2xl sm:rounded-3xl shadow-2xl animate-in zoom-in-95 duration-200">
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 z-20 p-2 rounded-full bg-white/80 hover:bg-white text-stone-600 hover:text-stone-900 shadow-md transition-colors"
+          className="absolute top-3 right-3 sm:top-4 sm:right-4 z-20 p-2 rounded-full bg-white/90 hover:bg-white text-stone-600 hover:text-stone-900 shadow-md transition-colors"
         >
           <X className="w-5 h-5" />
         </button>
 
         <div className="grid grid-cols-1 md:grid-cols-2">
           {/* Gallery side */}
-          <div className="p-6 bg-stone-50 flex flex-col justify-between">
+          <div className="p-4 sm:p-6 bg-stone-50 flex flex-col justify-between">
             <div className="relative aspect-square w-full rounded-2xl overflow-hidden bg-white shadow-sm border border-stone-200/60">
               <Image
                 src={product.images[selectedImg] || product.thumbnail || ""}
@@ -68,7 +68,7 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({ product, onClose
 
             {/* Thumbnail selector */}
             {product.images.length > 1 && (
-              <div className="flex gap-2 mt-4">
+              <div className="flex gap-2 mt-3 overflow-x-auto pb-1">
                 {product.images.map((img, idx) => (
                   <button
                     key={idx}

@@ -315,24 +315,24 @@ export default function AdminOrdersPage() {
 
       {/* COMPREHENSIVE ORDER INSPECTOR MODAL */}
       {inspectedOrder && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4">
           <div
             onClick={() => setInspectedOrder(null)}
             className="fixed inset-0 bg-stone-900/60 backdrop-blur-sm"
           />
-          <div className="relative z-10 w-full max-w-3xl bg-white rounded-3xl shadow-2xl p-6 sm:p-8 max-h-[90vh] overflow-y-auto space-y-6">
+          <div className="relative z-10 w-full max-w-3xl bg-white rounded-3xl shadow-2xl flex flex-col max-h-[90dvh] overflow-hidden animate-in fade-in zoom-in-95 duration-150">
             {/* Modal Header */}
-            <div className="flex items-center justify-between border-b border-stone-100 pb-4">
+            <div className="flex flex-wrap items-center justify-between px-5 sm:px-8 py-4 border-b border-stone-100 bg-white flex-shrink-0 gap-3">
               <div>
                 <div className="flex items-center gap-2">
-                  <h2 className="text-lg font-black text-stone-900 font-mono">
+                  <h2 className="text-base sm:text-lg font-black text-stone-900 font-mono">
                     Order {inspectedOrder.orderNumber}
                   </h2>
-                  <span className="px-2.5 py-0.5 rounded-full bg-rose-100 text-rose-800 text-xs font-bold uppercase">
+                  <span className="px-2.5 py-0.5 rounded-full bg-rose-100 text-rose-800 text-[11px] font-bold uppercase">
                     {inspectedOrder.orderStatus}
                   </span>
                 </div>
-                <p className="text-xs text-stone-400 mt-0.5">
+                <p className="text-[11px] text-stone-400 mt-0.5">
                   Placed on {new Date(inspectedOrder.createdAt).toLocaleString("en-IN")}
                 </p>
               </div>
@@ -341,19 +341,24 @@ export default function AdminOrdersPage() {
                 <Link
                   href={`/admin/orders/${inspectedOrder.id}/invoice`}
                   target="_blank"
-                  className="px-3 py-1.5 rounded-xl border border-stone-200 hover:bg-stone-50 text-xs font-bold text-stone-700 flex items-center gap-1"
+                  className="px-3 py-1.5 rounded-xl border border-stone-200 hover:bg-stone-50 text-xs font-bold text-stone-700 flex items-center gap-1 transition-colors"
                 >
                   <Printer className="w-3.5 h-3.5" />
                   <span>Tax Invoice</span>
                 </Link>
                 <button
+                  type="button"
                   onClick={() => setInspectedOrder(null)}
-                  className="p-1.5 text-stone-400 hover:text-stone-700"
+                  className="p-1.5 text-stone-400 hover:text-stone-700 hover:bg-stone-100 rounded-full transition-colors"
+                  aria-label="Close"
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
             </div>
+
+            {/* Scrollable Order Details Body */}
+            <div className="flex-1 overflow-y-auto px-5 sm:px-8 py-6 space-y-6">
 
             {/* Status & Courier Update Bar */}
             <div className="p-4 rounded-2xl bg-stone-50 border border-stone-200 grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
@@ -484,6 +489,7 @@ export default function AdminOrdersPage() {
             </div>
           </div>
         </div>
+      </div>
       )}
     </div>
   );

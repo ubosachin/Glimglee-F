@@ -55,7 +55,7 @@ export const CartDrawer: React.FC = () => {
       />
 
       {/* Drawer content */}
-      <div className="relative z-10 w-full max-w-md bg-white h-full shadow-2xl flex flex-col justify-between overflow-hidden animate-in slide-in-from-right duration-300">
+      <div className="relative z-10 w-full max-w-md bg-white h-[100dvh] max-h-[100dvh] shadow-2xl flex flex-col justify-between overflow-hidden animate-in slide-in-from-right duration-300">
         {/* Header */}
         <div className="p-5 border-b border-stone-100 flex items-center justify-between bg-[#fbfaf8]">
           <div className="flex items-center gap-2">
@@ -211,7 +211,7 @@ export const CartDrawer: React.FC = () => {
 
         {/* Footer with Calculations */}
         {items.length > 0 && (
-          <div className="p-5 border-t border-stone-100 bg-[#fdfcfb] space-y-3">
+          <div className="p-4 sm:p-5 border-t border-stone-100 bg-[#fdfcfb] space-y-3 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
             {/* Promo Code Form */}
             <div>
               {appliedCoupon ? (

@@ -537,8 +537,8 @@ export const Navbar: React.FC = () => {
 
       {/* 4. DEDICATED FULL-SCREEN MOBILE SEARCH MODAL */}
       {mobileSearchOpen && (
-        <div className="fixed inset-0 z-50 bg-stone-950/60 backdrop-blur-xs flex flex-col p-4 md:hidden animate-in fade-in">
-          <div className="bg-white rounded-3xl p-5 shadow-2xl space-y-4 max-h-[85vh] flex flex-col">
+        <div className="fixed inset-0 z-50 bg-stone-950/60 backdrop-blur-xs flex flex-col p-3 sm:p-4 md:hidden animate-in fade-in">
+          <div className="bg-white rounded-3xl p-4 sm:p-5 shadow-2xl space-y-4 max-h-[88dvh] flex flex-col">
             <div className="flex items-center justify-between pb-3 border-b border-stone-100">
               <span className="text-xs font-black text-stone-900 uppercase tracking-wider">
                 Search Glimglee Gifts
@@ -646,7 +646,7 @@ export const Navbar: React.FC = () => {
           />
 
           {/* Drawer Body */}
-          <div className="fixed inset-y-0 left-0 w-[85vw] max-w-sm bg-white shadow-2xl flex flex-col justify-between p-5 sm:p-6 z-10 animate-in slide-in-from-left duration-200 overflow-y-auto">
+          <div className="fixed inset-y-0 left-0 w-[85vw] max-w-sm h-[100dvh] max-h-[100dvh] bg-white shadow-2xl flex flex-col justify-between p-5 sm:p-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] z-10 animate-in slide-in-from-left duration-200 overflow-y-auto">
             <div className="space-y-6">
               
               {/* Drawer Top Header */}

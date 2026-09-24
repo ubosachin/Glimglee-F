@@ -178,10 +178,18 @@ export default function AdminLayout({
         </Link>
       </div>
 
+      {/* Mobile Sidebar Backdrop Overlay */}
+      {sidebarOpen && (
+        <div
+          onClick={() => setSidebarOpen(false)}
+          className="fixed inset-0 z-40 bg-stone-950/70 backdrop-blur-xs lg:hidden animate-in fade-in duration-150"
+        />
+      )}
+
       {/* Sidebar (Desktop + Mobile slideout) */}
       <aside
-        className={`fixed lg:sticky top-0 inset-y-0 left-0 z-50 w-64 bg-stone-950 text-stone-300 flex flex-col justify-between transition-transform duration-200 ${
-          sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+        className={`fixed lg:sticky top-0 inset-y-0 left-0 z-50 w-64 h-[100dvh] max-h-[100dvh] bg-stone-950 text-stone-300 flex flex-col justify-between transition-transform duration-200 ${
+          sidebarOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full lg:translate-x-0"
         }`}
       >
         <div className="p-5 flex-1 overflow-y-auto">

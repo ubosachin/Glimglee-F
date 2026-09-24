@@ -95,14 +95,19 @@ export default function ImageUpload({
     }
   };
 
+  const emptyDropzoneClass =
+    aspectRatio === "banner"
+      ? "h-28 sm:h-32"
+      : aspectRatio === "video"
+      ? "aspect-video"
+      : "h-36 sm:h-44";
+
   const aspectClass =
     aspectRatio === "banner"
       ? "aspect-[21/9] sm:aspect-[3/1]"
       : aspectRatio === "video"
       ? "aspect-video"
-      : aspectRatio === "auto"
-      ? "min-h-[140px]"
-      : "aspect-square";
+      : "aspect-square max-h-56";
 
   return (
     <div className={`space-y-2 ${className}`}>
@@ -141,7 +146,7 @@ export default function ImageUpload({
             setDragOver(false);
             handleFiles(e.dataTransfer.files);
           }}
-          className={`w-full ${aspectClass} rounded-2xl border-2 border-dashed transition-all cursor-pointer flex flex-col items-center justify-center p-6 text-center group ${
+          className={`w-full ${emptyDropzoneClass} rounded-2xl border-2 border-dashed transition-all cursor-pointer flex flex-col items-center justify-center p-4 sm:p-6 text-center group ${
             dragOver
               ? "border-rose-500 bg-rose-50/50"
               : "border-stone-200 hover:border-rose-400 bg-stone-50/60 hover:bg-stone-50"
