@@ -33,6 +33,7 @@ export default function CartPage() {
     toggleGiftWrap,
     amountNeededForFreeShipping,
     freeShippingProgress,
+    isLoaded,
   } = useCart();
 
   const [couponCode, setCouponCode] = useState("");
@@ -49,6 +50,15 @@ export default function CartPage() {
     setCouponMsg(res.message);
     if (res.success) setCouponCode("");
   };
+
+  if (!isLoaded) {
+    return (
+      <div className="max-w-3xl mx-auto px-4 py-24 text-center space-y-3">
+        <div className="animate-spin w-8 h-8 border-4 border-rose-500 border-t-transparent rounded-full mx-auto" />
+        <p className="text-xs text-stone-500 font-medium">Loading your gift bag...</p>
+      </div>
+    );
+  }
 
   if (items.length === 0) {
     return (

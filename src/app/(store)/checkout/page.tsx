@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
+import React, { useState, useEffect, useRef, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { useCart } from "@/lib/cart/CartContext";
@@ -20,18 +20,21 @@ import {
   Sparkles,
   MapPin,
   Building,
+  AlertTriangle,
 } from "lucide-react";
 import { Container } from "@/components/ui/Container";
 import { loadCashfreeCheckout } from "@/lib/payment/cashfree-client";
 
-export default function CheckoutPage() {
+function CheckoutContent() {
   const router = useRouter();
-  const { items, subtotal, discountAmount, giftWrapFee, total, appliedCoupon, clearCart } = useCart();
+  const searchParams = useSearchParams();
+  const { items, subtotal, discountAmount, giftWrapFee, total, appliedCoupon, clearCart, isLoaded } = useCart();
   const { user } = useAuth();
   const { toast } = useToast();
 
   const [step, setStep] = useState<1 | 2 | 3>(1); // 1: Address, 2: Review, 3: Payment
   const [loading, setLoading] = useState(false);
+  const [paymentError, setPaymentError] = useState<string | null>(null);
   const idempotencyKeyRef = useRef<string>("");
 
   useEffect(() => {
@@ -40,6 +43,30 @@ export default function CheckoutPage() {
       idempotencyKeyRef.current = `chk_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
     }
   }, []);
+
+  // Detect payment return errors (e.g. from Cashfree return_url /api/payment/cashfree/verify)
+  useEffect(() => {
+    const errorParam = searchParams?.get("error");
+    if (errorParam) {
+      setStep(3); // Jump directly to payment selection
+      // Refresh idempotency key for fresh attempt
+      idempotencyKeyRef.current = `chk_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
+
+      if (errorParam === "payment_declined") {
+        setPaymentError(
+          "Your previous online payment was not completed or was declined by your bank / UPI app. Don't worry — all your gift items, customizations, and address are safely preserved in your bag! Please retry or choose Cash on Delivery."
+        );
+      } else if (errorParam === "verification_failed") {
+        setPaymentError(
+          "Payment verification could not be confirmed. If money was deducted, it will be refunded by your bank within 24-48 hours. Your bag is completely safe — you can retry or choose Cash on Delivery."
+        );
+      } else {
+        setPaymentError(
+          "Payment was not completed. Your gift bag remains 100% safe! Please try again or switch to Cash on Delivery."
+        );
+      }
+    }
+  }, [searchParams]);
 
   // Address State (defaults from authenticated user if available)
   const [address, setAddress] = useState<ShippingAddress>({
@@ -72,10 +99,11 @@ export default function CheckoutPage() {
   const [paymentMethod, setPaymentMethod] = useState<"cashfree" | "cod">("cashfree");
 
   useEffect(() => {
-    if (items.length === 0) {
+    // Only redirect if cart has finished loading from localStorage and is confirmed empty
+    if (isLoaded && items.length === 0) {
       router.push("/cart");
     }
-  }, [items, router]);
+  }, [isLoaded, items, router]);
 
   const expressSurcharge = shippingMethod === "express" ? 150 : 0;
   const finalPayable = total + expressSurcharge;
@@ -92,6 +120,7 @@ export default function CheckoutPage() {
   const handlePlaceOrder = async () => {
     if (loading) return;
     setLoading(true);
+    setPaymentError(null);
 
     try {
       // 1. Verify with backend server
@@ -150,21 +179,34 @@ export default function CheckoutPage() {
         return;
       }
 
-      // 3. Handle Cashfree Checkout Flow
-      if (paymentMethod === "cashfree" && orderData.paymentSessionId) {
-        clearCart();
+      // 3. Handle Cashfree Online Checkout Flow
+      if (paymentMethod === "cashfree") {
+        if (!orderData.paymentSessionId) {
+          toast("Payment session could not be created. Please select Cash on Delivery or retry.", "error");
+          setPaymentError("Could not initialize payment gateway. Your cart items are completely safe. You can retry or choose Cash on Delivery.");
+          setLoading(false);
+          return;
+        }
+
+        // CRITICAL: We DO NOT call clearCart() here!
+        // The cart will ONLY be cleared when payment is verified and user reaches the confirmed order-success page.
         const cfEnv = (process.env.NEXT_PUBLIC_CASHFREE_ENV || "sandbox").toLowerCase() === "production" ? "production" : "sandbox";
         try {
           await loadCashfreeCheckout(orderData.paymentSessionId, cfEnv);
           return;
         } catch (sdkErr) {
-          console.error("Cashfree SDK launch notice:", sdkErr);
-          router.push(`/order-success/${orderData.order.id}`);
+          console.warn("Cashfree checkout window closed or cancelled:", sdkErr);
+          toast("Payment window was closed. Your items are safe in your bag.", "error");
+          setPaymentError("Payment window was closed or cancelled. Your bag items are intact — please try again or select Cash on Delivery.");
+          // Refresh idempotency key so retry generates fresh session
+          idempotencyKeyRef.current = `chk_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
+          setLoading(false);
           return;
         }
       }
 
       // 4. Handle Cash on Delivery (COD)
+      // COD orders are placed and confirmed immediately!
       clearCart();
       router.push(`/order-success/${orderData.order.id}`);
     } catch (err) {
@@ -487,6 +529,38 @@ export default function CheckoutPage() {
                 </p>
               </div>
 
+              {/* Payment Alert Banner (Declined / Cancelled) */}
+              {paymentError && (
+                <div className="p-4 rounded-2xl bg-amber-50 border border-amber-300 text-amber-900 text-xs flex items-start gap-3 shadow-sm animate-in fade-in slide-in-from-top-2">
+                  <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                  <div className="flex-1 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-amber-950 text-sm">Payment Not Completed</span>
+                      <button
+                        type="button"
+                        onClick={() => setPaymentError(null)}
+                        className="text-[11px] font-semibold text-amber-700 hover:text-amber-900 underline"
+                      >
+                        Dismiss
+                      </button>
+                    </div>
+                    <p className="leading-relaxed text-amber-800">{paymentError}</p>
+                    <div className="pt-1 flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setPaymentMethod("cod");
+                          setPaymentError(null);
+                        }}
+                        className="px-3.5 py-1.5 rounded-xl bg-amber-700 hover:bg-amber-800 text-white font-bold text-[11px] shadow-sm transition-all"
+                      >
+                        Select Cash on Delivery (COD)
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Payment Method Selector */}
               <div className="space-y-3 text-xs">
                 {/* Cashfree Payments */}
@@ -642,5 +716,20 @@ export default function CheckoutPage() {
         </div>
       </div>
     </Container>
+  );
+}
+
+export default function CheckoutPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-[60vh] flex flex-col items-center justify-center gap-3">
+          <div className="animate-spin w-8 h-8 border-4 border-rose-500 border-t-transparent rounded-full" />
+          <p className="text-xs text-stone-500 font-medium">Securing checkout session...</p>
+        </div>
+      }
+    >
+      <CheckoutContent />
+    </Suspense>
   );
 }

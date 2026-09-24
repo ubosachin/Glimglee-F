@@ -14,6 +14,7 @@ interface CartContextType {
   total: number;
   appliedCoupon: Coupon | null;
   isCartOpen: boolean;
+  isLoaded: boolean;
   freeShippingThreshold: number;
   amountNeededForFreeShipping: number;
   freeShippingProgress: number;
@@ -46,27 +47,34 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [appliedCoupon, setAppliedCoupon] = useState<Coupon | null>(null);
   const [discountAmount, setDiscountAmount] = useState<number>(0);
   const [isCartOpen, setIsCartOpen] = useState<boolean>(false);
+  const [isLoaded, setIsLoaded] = useState<boolean>(false);
 
-  // Load cart from storage
+  // Load cart from storage on initial mount
   useEffect(() => {
     try {
       const stored = localStorage.getItem(CART_STORAGE_KEY);
       if (stored) {
-        setItems(JSON.parse(stored));
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed)) {
+          setItems(parsed);
+        }
       }
     } catch (e) {
       console.error("Failed to load cart from localStorage", e);
+    } finally {
+      setIsLoaded(true);
     }
   }, []);
 
-  // Save cart to storage
+  // Save cart to storage only after initial hydration
   useEffect(() => {
+    if (!isLoaded) return;
     try {
       localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
     } catch (e) {
       console.error("Failed to save cart to localStorage", e);
     }
-  }, [items]);
+  }, [items, isLoaded]);
 
   // Recalculate coupon if cart changes
   useEffect(() => {
@@ -219,6 +227,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         total,
         appliedCoupon,
         isCartOpen,
+        isLoaded,
         freeShippingThreshold: FREE_SHIPPING_THRESHOLD,
         amountNeededForFreeShipping,
         freeShippingProgress,

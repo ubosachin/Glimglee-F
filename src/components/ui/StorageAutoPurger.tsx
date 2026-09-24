@@ -11,8 +11,7 @@ export function StorageAutoPurger() {
         if (
           k &&
           (k.startsWith("glimglee_db_") ||
-            k === "glimglee_mock_orders" ||
-            k === "glimglee_cart")
+            k === "glimglee_mock_orders")
         ) {
           keysToRemove.push(k);
         }

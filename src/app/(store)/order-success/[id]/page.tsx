@@ -7,6 +7,7 @@ import Image from "next/image";
 import confetti from "canvas-confetti";
 import { getOrderById } from "@/lib/services/storeDb";
 import { Order } from "@/lib/types";
+import { useCart } from "@/lib/cart/CartContext";
 import {
   CheckCircle2,
   Package,
@@ -22,8 +23,12 @@ export default function OrderSuccessPage() {
   const params = useParams();
   const id = params?.id as string;
   const [order, setOrder] = useState<Order | null>(null);
+  const { clearCart } = useCart();
 
   useEffect(() => {
+    // Safely clear cart upon confirmed order completion
+    clearCart();
+
     // Launch celebratory confetti burst
     confetti({
       particleCount: 100,
@@ -34,7 +39,7 @@ export default function OrderSuccessPage() {
     if (id) {
       getOrderById(id).then(setOrder);
     }
-  }, [id]);
+  }, [id, clearCart]);
 
   const handlePrint = () => {
     window.print();
