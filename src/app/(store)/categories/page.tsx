@@ -36,12 +36,18 @@ export default function CategoriesPage() {
             className="group relative rounded-3xl overflow-hidden bg-white border border-stone-200/80 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col"
           >
             <div className="relative aspect-[16/10] w-full overflow-hidden bg-stone-100">
-              <Image
-                src={cat.image}
-                alt={cat.name}
-                fill
-                className="object-cover group-hover:scale-105 transition-transform duration-700"
-              />
+              {cat.image || cat.imageUrl ? (
+                <Image
+                  src={cat.image || cat.imageUrl || ""}
+                  alt={cat.name}
+                  fill
+                  className="object-cover group-hover:scale-105 transition-transform duration-700"
+                />
+              ) : (
+                <div className="w-full h-full bg-gradient-to-br from-rose-100 via-stone-100 to-amber-100 flex items-center justify-center">
+                  <span className="text-2xl font-black text-rose-600">{cat.name.slice(0, 2).toUpperCase()}</span>
+                </div>
+              )}
               <div className="absolute inset-0 bg-gradient-to-t from-stone-950/60 via-transparent to-transparent" />
               <div className="absolute bottom-4 left-4 right-4 text-white">
                 <span className="text-[10px] font-bold uppercase tracking-wider text-rose-300">

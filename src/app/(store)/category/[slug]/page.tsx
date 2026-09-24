@@ -88,14 +88,16 @@ export default function CategoryDetailPage() {
           </p>
         </div>
 
-        <div className="absolute inset-0 opacity-30 mix-blend-overlay">
-          <Image
-            src={category.image}
-            alt={category.name}
-            fill
-            className="object-cover"
-          />
-        </div>
+        {(category.image || category.imageUrl) && (
+          <div className="absolute inset-0 opacity-30 mix-blend-overlay">
+            <Image
+              src={category.image || category.imageUrl || ""}
+              alt={category.name}
+              fill
+              className="object-cover"
+            />
+          </div>
+        )}
       </div>
 
       {/* Products Grid */}
