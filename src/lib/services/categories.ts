@@ -47,6 +47,7 @@ export async function getCategories(includeInactive = false): Promise<Category[]
 
   if (categoriesCache && now - categoriesCache.timestamp < CACHE_TTL_MS) {
     list = categoriesCache.data;
+  } else {
     // Check local storage for instant zero-latency start
     if (typeof window !== "undefined") {
       const local = getLocalCategories();
@@ -66,17 +67,21 @@ export async function getCategories(includeInactive = false): Promise<Category[]
             .find(filter)
             .sort({ order: 1, createdAt: -1 })
             .toArray();
-          list = docs;
+          if (docs && docs.length > 0) {
+            list = docs;
+          }
         }
       } catch (e) {
         console.warn("Direct mongo getCategories error:", e);
       }
     } else {
       try {
-        const res = await fetch(`/api/categories?includeInactive=${includeInactive}`);
+        const res = await fetch(`/api/categories?includeInactive=${includeInactive}`, {
+          cache: "no-store",
+        });
         if (res.ok) {
           const data = await res.json();
-          if (Array.isArray(data.categories)) {
+          if (Array.isArray(data.categories) && data.categories.length > 0) {
             list = data.categories;
           }
         }
@@ -111,7 +116,39 @@ export async function getCategories(includeInactive = false): Promise<Category[]
 
 export async function getCategoryBySlug(slug: string): Promise<Category | null> {
   const categories = await getCategories(true);
-  return categories.find((c) => c.slug === slug || c.id === slug) || null;
+  const found = categories.find(
+    (c) => c.slug?.toLowerCase() === slug.toLowerCase() || c.id === slug
+  );
+  if (found) return found;
+
+  if (typeof window === "undefined") {
+    try {
+      const { getDb, isMongoConfigured } = await import("@/lib/mongodb/client");
+      if (isMongoConfigured) {
+        const db = await getDb();
+        const cat = await db.collection<Category>("categories").findOne({
+          $or: [{ slug }, { id: slug }, { slug: slug.toLowerCase() }],
+        });
+        if (cat) return cat;
+      }
+    } catch (e) {
+      console.warn("Direct mongo getCategoryBySlug error:", e);
+    }
+  } else {
+    try {
+      const res = await fetch(`/api/categories?slug=${encodeURIComponent(slug)}`, {
+        cache: "no-store",
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.category) return data.category;
+      }
+    } catch (e) {
+      console.warn("Fetch getCategoryBySlug error:", e);
+    }
+  }
+
+  return null;
 }
 
 export async function saveCategory(category: Partial<Category> & { id?: string }): Promise<Category> {
@@ -121,7 +158,7 @@ export async function saveCategory(category: Partial<Category> & { id?: string }
   const fullCategory: Category = {
     id,
     name: category.name || "New Collection",
-    slug: category.slug || `category-${Date.now()}`,
+    slug: category.slug || category.name?.toLowerCase().replace(/[^a-z0-9]+/g, "-") || `category-${Date.now()}`,
     description: category.description || "",
     image: category.image || category.imageUrl || "",
     imageUrl: category.imageUrl || category.image || "",
@@ -168,6 +205,9 @@ export async function saveCategory(category: Partial<Category> & { id?: string }
   }
   saveLocalCategories(local);
   invalidateCategoriesCache();
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new CustomEvent("glimglee_categories_updated", { detail: fullCategory }));
+  }
   return fullCategory;
 }
 
@@ -197,5 +237,8 @@ export async function deleteCategory(id: string): Promise<boolean> {
   const local = getLocalCategories().filter((c) => c.id !== id);
   saveLocalCategories(local);
   invalidateCategoriesCache();
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new CustomEvent("glimglee_categories_updated", { detail: { id } }));
+  }
   return true;
 }
