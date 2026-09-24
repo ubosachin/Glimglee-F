@@ -383,11 +383,12 @@ export const Navbar: React.FC = () => {
               {(isAdmin || isManager) && (
                 <Link
                   href="/admin/dashboard"
-                  className="hidden md:inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-xs hover:shadow transition-all"
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3.5 sm:py-2 rounded-full bg-rose-600 hover:bg-rose-700 text-white text-[11px] sm:text-xs font-bold shadow-xs hover:shadow transition-all flex-shrink-0"
                   title="Open Administration Suite"
                 >
-                  <SlidersHorizontal className="w-3.5 h-3.5" />
-                  <span>Admin Panel</span>
+                  <SlidersHorizontal className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                  <span className="hidden xs:inline sm:inline">Admin Panel</span>
+                  <span className="inline xs:hidden sm:hidden">Admin</span>
                 </Link>
               )}
 

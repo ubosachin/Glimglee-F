@@ -65,17 +65,23 @@ export async function POST(req: NextRequest) {
         const db = await getDb();
         const usersCol = db.collection("users");
 
-        existingUser = await usersCol.findOne({ email });
+        existingUser = await usersCol.findOne({
+          email: { $regex: new RegExp(`^${email.trim()}$`, "i") },
+        });
 
         if (existingUser) {
-          // If existing user was already ADMIN / SUPER_ADMIN, preserve it
-          if (existingUser.role === "ADMIN" || existingUser.role === "SUPER_ADMIN") {
+          // If existing user was already ADMIN / SUPER_ADMIN / MANAGER in MongoDB, preserve it
+          if (
+            existingUser.role === "ADMIN" ||
+            existingUser.role === "SUPER_ADMIN" ||
+            existingUser.role === "MANAGER"
+          ) {
             role = existingUser.role;
           } else if (isExplicitAdmin) {
             role = "SUPER_ADMIN";
           }
           await usersCol.updateOne(
-            { email },
+            { _id: existingUser._id },
             {
               $set: {
                 displayName: payload.name || existingUser.displayName,

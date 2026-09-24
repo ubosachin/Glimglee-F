@@ -218,7 +218,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     saveUserSession(updated);
   };
 
-  const isAdmin = user?.role === "ADMIN" || user?.role === "SUPER_ADMIN";
+  const cleanEmail = user?.email?.toLowerCase().trim() || "";
+  const isDirectAdminEmail =
+    cleanEmail === "ubosachin@gmail.com" ||
+    cleanEmail === "admin@glimglee.com" ||
+    cleanEmail.endsWith("@glimglee.com");
+
+  const isAdmin =
+    user?.role === "ADMIN" ||
+    user?.role === "SUPER_ADMIN" ||
+    isDirectAdminEmail;
+
   const isManager = isAdmin || user?.role === "MANAGER";
 
   return (
