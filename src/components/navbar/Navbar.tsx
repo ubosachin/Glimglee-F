@@ -240,23 +240,6 @@ export const Navbar: React.FC = () => {
                 )}
               </Link>
 
-              {categories.slice(0, 4).map((cat) => (
-                <Link
-                  key={cat.id}
-                  href={`/category/${cat.slug}`}
-                  className={`transition-colors relative py-1 whitespace-nowrap ${
-                    pathname === `/category/${cat.slug}`
-                      ? "text-stone-950 font-bold"
-                      : "text-stone-600 hover:text-stone-950"
-                  }`}
-                >
-                  <span>{cat.name}</span>
-                  {pathname === `/category/${cat.slug}` && (
-                    <span className="absolute -bottom-1 left-0 right-0 h-[2px] bg-stone-950 rounded-full" />
-                  )}
-                </Link>
-              ))}
-
               <Link
                 href="/categories"
                 className={`transition-colors relative py-1 whitespace-nowrap ${
@@ -267,6 +250,34 @@ export const Navbar: React.FC = () => {
               >
                 <span>All Collections</span>
                 {pathname === "/categories" && (
+                  <span className="absolute -bottom-1 left-0 right-0 h-[2px] bg-stone-950 rounded-full" />
+                )}
+              </Link>
+
+              <Link
+                href="/orders/track"
+                className={`transition-colors relative py-1 whitespace-nowrap ${
+                  pathname === "/orders/track"
+                    ? "text-stone-950 font-bold"
+                    : "text-stone-600 hover:text-stone-950"
+                }`}
+              >
+                <span>Track Order</span>
+                {pathname === "/orders/track" && (
+                  <span className="absolute -bottom-1 left-0 right-0 h-[2px] bg-stone-950 rounded-full" />
+                )}
+              </Link>
+
+              <Link
+                href="/about"
+                className={`transition-colors relative py-1 whitespace-nowrap ${
+                  pathname === "/about"
+                    ? "text-stone-950 font-bold"
+                    : "text-stone-600 hover:text-stone-950"
+                }`}
+              >
+                <span>About</span>
+                {pathname === "/about" && (
                   <span className="absolute -bottom-1 left-0 right-0 h-[2px] bg-stone-950 rounded-full" />
                 )}
               </Link>
@@ -507,15 +518,24 @@ export const Navbar: React.FC = () => {
                   <Flame className="w-3.5 h-3.5 text-amber-500" />
                   <span>Trending Gifts</span>
                 </Link>
-                {categories.map((cat) => (
-                  <Link
-                    key={cat.id}
-                    href={`/category/${cat.slug}`}
-                    className="hover:text-rose-600 transition-colors whitespace-nowrap"
-                  >
-                    {cat.name}
-                  </Link>
-                ))}
+                <Link
+                  href="/shop?isCustomizable=true"
+                  className="hover:text-rose-600 transition-colors whitespace-nowrap"
+                >
+                  Personalized Keepsakes
+                </Link>
+                <Link
+                  href="/categories"
+                  className="hover:text-rose-600 transition-colors whitespace-nowrap"
+                >
+                  Curated Hampers
+                </Link>
+                <Link
+                  href="/shop?sort=newest"
+                  className="hover:text-rose-600 transition-colors whitespace-nowrap"
+                >
+                  New Arrivals
+                </Link>
               </div>
 
               <div className="flex items-center gap-3 pl-4 border-l border-stone-200 flex-shrink-0">
