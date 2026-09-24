@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <defs>
+    <!-- Background Gradient -->
+    <linearGradient id="roseGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FF385C" />
+      <stop offset="50%" stop-color="#E11D48" />
+      <stop offset="100%" stop-color="#881337" />
+    </linearGradient>
+    
+    <!-- Sparkle Glow -->
+    <radialGradient id="sparkleGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FDE047" stop-opacity="0.8" />
+      <stop offset="100%" stop-color="#FDE047" stop-opacity="0" />
+    </radialGradient>
+    
+    <!-- Specular Highlight -->
+    <linearGradient id="sheen" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.25" />
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0" />
+    </linearGradient>
+    
+    <!-- Drop Shadow Filter for badge -->
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="16" stdDeviation="20" flood-color="#881337" flood-opacity="0.4" />
+    </filter>
+  </defs>
+
+  <!-- Squircle Base -->
+  <rect x="32" y="32" width="448" height="448" rx="116" fill="url(#roseGrad)" filter="url(#shadow)" />
+  <rect x="32" y="32" width="448" height="448" rx="116" stroke="#FFFFFF" stroke-opacity="0.2" stroke-width="6" fill="none" />
+  
+  <!-- Subtle Top Specular Sheen -->
+  <path d="M 32 148 C 32 84 84 32 148 32 L 364 32 C 428 32 480 84 480 148 C 480 164 390 220 256 220 C 122 220 32 164 32 148 Z" fill="url(#sheen)" />
+
+  <!-- Bold Luxury 'G' Monogram -->
+  <path d="M 345 192
+           C 318 158 276 136 228 136
+           C 152 136 96 194 96 268
+           C 96 342 152 400 228 400
+           C 300 400 354 350 360 280
+           L 240 280
+           C 228 280 220 272 220 260
+           L 220 248
+           C 220 236 228 228 240 228
+           L 392 228
+           C 403 228 412 237 412 248
+           C 408 360 330 452 228 452
+           C 124 452 44 370 44 268
+           C 44 166 124 84 228 84
+           C 288 84 344 114 380 162
+           C 388 172 384 186 372 192
+           L 358 198
+           C 352 201 348 198 345 192 Z" 
+        fill="#FFFFFF" />
+
+  <!-- 4-point Diamond Sparkle (✦) -->
+  <circle cx="396" cy="116" r="64" fill="url(#sparkleGlow)" />
+  <path d="M 396 52 
+           Q 396 116 460 116 
+           Q 396 116 396 180 
+           Q 396 116 332 116 
+           Q 396 116 396 52 Z" 
+        fill="#FFFBEB" />
+  <circle cx="396" cy="116" r="10" fill="#FFFFFF" />
+</svg>

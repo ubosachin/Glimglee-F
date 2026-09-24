@@ -17,6 +17,20 @@ export const metadata: Metadata = {
   title: "Glimglee — Modern Gifting, Made Personal",
   description: "Thoughtfully crafted luxury hampers, scented soy candles, artisan greeting cards, and personalized frames hand-finished with love.",
   keywords: ["gifts", "gift hampers", "candles", "greeting cards", "personalized frames", "couple gifts", "india gifting", "glimglee"],
+  icons: {
+    icon: [
+      { url: "/favicon.ico" },
+      { url: "/favicon-96x96.png", sizes: "96x96", type: "image/png" },
+      { url: "/favicon.svg", type: "image/svg+xml" },
+    ],
+    shortcut: "/favicon.ico",
+    apple: "/apple-touch-icon.png",
+  },
+  manifest: "/site.webmanifest",
+  appleWebApp: {
+    title: "Glimglee",
+    statusBarStyle: "default",
+  },
   openGraph: {
     title: "Glimglee — Modern Gifting, Made Personal",
     description: "Make every moment glow with India's favorite personalized gifting brand.",
