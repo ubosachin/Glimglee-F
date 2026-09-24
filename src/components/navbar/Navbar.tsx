@@ -231,7 +231,7 @@ export const Navbar: React.FC = () => {
                     : "text-stone-600 hover:text-stone-950"
                 }`}
               >
-                <span>All Gifts</span>
+                <span>Shop</span>
                 {isCurrent("/shop") && (
                   <span className="absolute -bottom-1 left-0 right-0 h-[2px] bg-stone-950 rounded-full" />
                 )}
@@ -630,7 +630,7 @@ export const Navbar: React.FC = () => {
               onClick={() => handleSearchSubmit()}
               className="w-full py-3 bg-stone-900 hover:bg-stone-800 text-white rounded-2xl font-bold text-xs transition-colors"
             >
-              Search for "{searchQuery || "All Gifts"}"
+              Search for "{searchQuery || "Shop"}"
             </button>
           </div>
         </div>
