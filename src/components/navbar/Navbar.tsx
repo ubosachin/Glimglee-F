@@ -151,14 +151,6 @@ export const Navbar: React.FC = () => {
           {/* Right: Quick Utilities */}
           <div className="hidden sm:flex items-center gap-4 text-stone-300">
             <Link
-              href="/orders/track"
-              className="flex items-center gap-1 text-stone-300 hover:text-white transition-colors"
-            >
-              <Truck className="w-3.5 h-3.5 text-rose-400" />
-              <span>Track Order</span>
-            </Link>
-            <span className="text-stone-700">•</span>
-            <Link
               href="/contact"
               className="text-stone-300 hover:text-white transition-colors"
             >
@@ -250,20 +242,6 @@ export const Navbar: React.FC = () => {
               >
                 <span>All Collections</span>
                 {pathname === "/categories" && (
-                  <span className="absolute -bottom-1 left-0 right-0 h-[2px] bg-stone-950 rounded-full" />
-                )}
-              </Link>
-
-              <Link
-                href="/orders/track"
-                className={`transition-colors relative py-1 whitespace-nowrap ${
-                  pathname === "/orders/track"
-                    ? "text-stone-950 font-bold"
-                    : "text-stone-600 hover:text-stone-950"
-                }`}
-              >
-                <span>Track Order</span>
-                {pathname === "/orders/track" && (
                   <span className="absolute -bottom-1 left-0 right-0 h-[2px] bg-stone-950 rounded-full" />
                 )}
               </Link>
@@ -465,6 +443,14 @@ export const Navbar: React.FC = () => {
                       >
                         <Package className="w-4 h-4 text-stone-400" />
                         <span>My Orders & Invoices</span>
+                      </Link>
+                      <Link
+                        href="/orders/track"
+                        onClick={() => setAccountMenuOpen(false)}
+                        className="flex items-center gap-2.5 px-3 py-2 hover:bg-stone-50 hover:text-stone-900 rounded-xl transition-colors font-medium text-stone-700"
+                      >
+                        <Truck className="w-4 h-4 text-rose-500" />
+                        <span>Track Order</span>
                       </Link>
                       <Link
                         href="/account/addresses"

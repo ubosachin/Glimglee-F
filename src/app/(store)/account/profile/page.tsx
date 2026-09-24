@@ -14,6 +14,8 @@ import {
   Lock,
   Heart,
   Sparkles,
+  Truck,
+  ArrowRight as ArrowRightIcon,
 } from "lucide-react";
 
 export default function CustomerProfilePage() {
@@ -261,6 +263,23 @@ export default function CustomerProfilePage() {
               <span className="text-stone-400">Reward Points:</span>
               <span className="font-bold text-amber-300">450 GlowPoints (₹450 value)</span>
             </div>
+          </div>
+
+          <div className="bg-white rounded-3xl border border-stone-200/80 p-6 shadow-sm space-y-3 text-xs">
+            <h4 className="font-bold text-stone-900 flex items-center gap-2">
+              <Truck className="w-4 h-4 text-rose-600" />
+              <span>Track Your Orders</span>
+            </h4>
+            <p className="text-stone-500 leading-relaxed">
+              Real-time shipment tracking, dispatch timelines, and live courier status for your gift deliveries.
+            </p>
+            <Link
+              href="/orders/track"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-stone-900 hover:bg-stone-800 text-white font-bold transition-colors"
+            >
+              <span>Track Live Package</span>
+              <ArrowRightIcon className="w-3.5 h-3.5" />
+            </Link>
           </div>
 
           <div className="bg-white rounded-3xl border border-stone-200/80 p-6 shadow-sm space-y-4 text-xs">

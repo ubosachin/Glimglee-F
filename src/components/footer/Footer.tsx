@@ -176,6 +176,15 @@ export const Footer: React.FC = () => {
             <div className="space-y-3">
               <h4 className="text-xs font-bold text-white uppercase tracking-wider">Customer Care</h4>
               <ul className="space-y-2 text-xs text-stone-400">
+                <li>
+                  <Link
+                    href="/orders/track"
+                    className="hover:text-white transition-colors text-rose-400 font-bold flex items-center gap-1.5"
+                  >
+                    <Truck className="w-3.5 h-3.5 text-rose-400" />
+                    <span>Track Order</span>
+                  </Link>
+                </li>
                 <li><Link href="/contact" className="hover:text-white transition-colors">Contact Support</Link></li>
                 <li><Link href="/faq" className="hover:text-white transition-colors">FAQs</Link></li>
                 <li><Link href="/about" className="hover:text-white transition-colors">Our Story & Ethics</Link></li>
@@ -251,6 +260,12 @@ export const Footer: React.FC = () => {
               </button>
               {openSection === "care" && (
                 <ul className="pb-3.5 space-y-2 text-xs text-stone-400 animate-in fade-in">
+                  <li>
+                    <Link href="/orders/track" className="text-rose-400 font-bold flex items-center gap-1.5">
+                      <Truck className="w-3.5 h-3.5 text-rose-400" />
+                      <span>Track Order</span>
+                    </Link>
+                  </li>
                   <li><Link href="/contact" className="hover:text-white">Contact & Support</Link></li>
                   <li><Link href="/faq" className="hover:text-white">FAQs</Link></li>
                   <li><Link href="/about" className="hover:text-white">Our Story & Craft</Link></li>

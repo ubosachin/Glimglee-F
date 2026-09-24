@@ -15,6 +15,7 @@ import {
   ArrowRight,
   Sparkles,
   SlidersHorizontal,
+  Truck,
 } from "lucide-react";
 
 export default function AccountOverviewPage() {
@@ -109,7 +110,7 @@ export default function AccountOverviewPage() {
       </div>
 
       {/* Account Navigation Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
         <Link
           href="/account/orders"
           className="p-5 rounded-3xl bg-white border border-stone-200/90 shadow-sm hover:border-rose-400 hover:shadow-md transition-all group flex flex-col justify-between"
@@ -129,6 +130,29 @@ export default function AccountOverviewPage() {
           </div>
           <div className="pt-4 flex items-center justify-between text-xs font-bold text-rose-600">
             <span>View All ({orders.length})</span>
+            <ArrowRight className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" />
+          </div>
+        </Link>
+
+        <Link
+          href="/orders/track"
+          className="p-5 rounded-3xl bg-white border border-stone-200/90 shadow-sm hover:border-rose-400 hover:shadow-md transition-all group flex flex-col justify-between"
+        >
+          <div className="space-y-3">
+            <div className="w-10 h-10 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center group-hover:bg-rose-600 group-hover:text-white transition-colors">
+              <Truck className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="font-bold text-sm text-stone-900 group-hover:text-rose-600 transition-colors">
+                Track Order
+              </h3>
+              <p className="text-[11px] text-stone-500 mt-0.5">
+                Live delivery status & AWB courier tracking
+              </p>
+            </div>
+          </div>
+          <div className="pt-4 flex items-center justify-between text-xs font-bold text-rose-600">
+            <span>Track Delivery</span>
             <ArrowRight className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" />
           </div>
         </Link>
