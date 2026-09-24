@@ -98,18 +98,20 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
 
         {/* Product Items */}
         {mobileLayout === "carousel" ? (
-          <div
-            ref={scrollRef}
-            className="flex sm:grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 lg:gap-6 overflow-x-auto sm:overflow-visible pb-4 sm:pb-0 snap-x snap-mandatory scrollbar-none -mx-4 px-4 sm:mx-0 sm:px-0"
-          >
-            {products.map((product) => (
-              <div
-                key={product.id}
-                className="flex-shrink-0 w-[180px] sm:w-auto snap-start h-full"
-              >
-                <ProductCard product={product} onQuickView={onQuickView} />
-              </div>
-            ))}
+          <div className="w-full max-w-full overflow-hidden">
+            <div
+              ref={scrollRef}
+              className="flex sm:grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 lg:gap-6 overflow-x-auto sm:overflow-visible pb-4 sm:pb-0 snap-x snap-mandatory scrollbar-none -mx-4 px-4 sm:mx-0 sm:px-0"
+            >
+              {products.map((product) => (
+                <div
+                  key={product.id}
+                  className="flex-shrink-0 w-[180px] sm:w-auto snap-start h-full"
+                >
+                  <ProductCard product={product} onQuickView={onQuickView} />
+                </div>
+              ))}
+            </div>
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 lg:gap-6">

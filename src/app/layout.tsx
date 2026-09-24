@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/lib/auth/AuthContext";
@@ -12,6 +12,12 @@ const fontSans = Plus_Jakarta_Sans({
   weight: ["300", "400", "500", "600", "700", "800"],
   variable: "--font-sans",
 });
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+};
 
 export const metadata: Metadata = {
   title: "Glimglee — Modern Gifting, Made Personal",
@@ -44,7 +50,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="h-full bg-[#faf8f5]">
+    <html lang="en" className="h-full bg-[#faf8f5] max-w-full overflow-x-hidden">
       <head>
         <script
           dangerouslySetInnerHTML={{
@@ -65,7 +71,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className={`${fontSans.variable} font-sans min-h-full flex flex-col text-stone-900 antialiased`}>
+      <body className={`${fontSans.variable} font-sans min-h-full flex flex-col text-stone-900 antialiased max-w-full overflow-x-hidden`}>
         <StorageAutoPurger />
         <ToastProvider>
           <AuthProvider>

@@ -259,37 +259,39 @@ export default function HomePage() {
             {loading ? (
               <CategorySkeleton count={6} />
             ) : (
-              <div className="flex sm:grid sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3.5 sm:gap-4 overflow-x-auto sm:overflow-visible pb-4 sm:pb-0 scrollbar-none snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0">
-                {categories.map((cat) => (
-                  <Link
-                    key={cat.id}
-                    href={`/category/${cat.slug}`}
-                    className="flex-shrink-0 w-28 sm:w-auto text-center group snap-start flex flex-col items-center"
-                  >
-                    <div className="w-28 h-28 sm:w-full sm:aspect-square rounded-2xl sm:rounded-3xl overflow-hidden relative border border-stone-200/90 shadow-2xs group-hover:shadow-md group-hover:border-rose-500 group-hover:-translate-y-0.5 transition-all duration-300 bg-stone-100 mb-2.5">
-                      {cat.imageUrl || cat.image ? (
-                        <Image
-                          src={cat.imageUrl || cat.image}
-                          alt={cat.name}
-                          fill
-                          sizes="(max-width: 640px) 120px, (max-width: 1024px) 200px, 240px"
-                          className="object-cover group-hover:scale-108 transition-transform duration-500 ease-out"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-rose-50 to-stone-100 text-rose-600 font-black text-sm">
-                          {cat.name.slice(0, 2).toUpperCase()}
-                        </div>
-                      )}
-                      <div className="absolute inset-0 bg-stone-900/0 group-hover:bg-stone-900/5 transition-colors" />
-                    </div>
-                    <span className="text-xs sm:text-sm font-bold text-stone-800 group-hover:text-rose-600 transition-colors line-clamp-1">
-                      {cat.name}
-                    </span>
-                    <span className="text-[11px] text-stone-400 group-hover:text-rose-500 transition-colors font-medium">
-                      {cat.itemCount ? `${cat.itemCount}+ gifts` : "View"}
-                    </span>
-                  </Link>
-                ))}
+              <div className="w-full max-w-full overflow-hidden">
+                <div className="flex sm:grid sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3.5 sm:gap-4 overflow-x-auto sm:overflow-visible pb-4 sm:pb-0 scrollbar-none snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0">
+                  {categories.map((cat) => (
+                    <Link
+                      key={cat.id}
+                      href={`/category/${cat.slug}`}
+                      className="flex-shrink-0 w-28 sm:w-auto text-center group snap-start flex flex-col items-center"
+                    >
+                      <div className="w-28 h-28 sm:w-full sm:aspect-square rounded-2xl sm:rounded-3xl overflow-hidden relative border border-stone-200/90 shadow-2xs group-hover:shadow-md group-hover:border-rose-500 group-hover:-translate-y-0.5 transition-all duration-300 bg-stone-100 mb-2.5">
+                        {cat.imageUrl || cat.image ? (
+                          <Image
+                            src={cat.imageUrl || cat.image}
+                            alt={cat.name}
+                            fill
+                            sizes="(max-width: 640px) 120px, (max-width: 1024px) 200px, 240px"
+                            className="object-cover group-hover:scale-108 transition-transform duration-500 ease-out"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-rose-50 to-stone-100 text-rose-600 font-black text-sm">
+                            {cat.name.slice(0, 2).toUpperCase()}
+                          </div>
+                        )}
+                        <div className="absolute inset-0 bg-stone-900/0 group-hover:bg-stone-900/5 transition-colors" />
+                      </div>
+                      <span className="text-xs sm:text-sm font-bold text-stone-800 group-hover:text-rose-600 transition-colors line-clamp-1">
+                        {cat.name}
+                      </span>
+                      <span className="text-[11px] text-stone-400 group-hover:text-rose-500 transition-colors font-medium">
+                        {cat.itemCount ? `${cat.itemCount}+ gifts` : "View"}
+                      </span>
+                    </Link>
+                  ))}
+                </div>
               </div>
             )}
           </Container>

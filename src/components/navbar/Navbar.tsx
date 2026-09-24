@@ -129,8 +129,8 @@ export const Navbar: React.FC = () => {
   return (
     <>
       {/* 1. TOP UTILITY / ANNOUNCEMENT BAR */}
-      <div className="bg-[#1c1917] text-stone-300 text-[11px] font-medium border-b border-stone-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-9 flex items-center justify-between gap-4">
+      <div className="bg-[#1c1917] text-stone-300 text-[11px] font-medium border-b border-stone-800 w-full max-w-full overflow-hidden">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-8 sm:h-9 flex items-center justify-between gap-2 sm:gap-4">
           {/* Left: Craftsmanship Highlights */}
           <div className="hidden md:flex items-center gap-3">
             <span className="flex items-center gap-1.5 text-rose-300 font-semibold tracking-tight">
@@ -142,8 +142,8 @@ export const Navbar: React.FC = () => {
           </div>
 
           {/* Center (Mobile Highlight) */}
-          <div className="flex md:hidden items-center justify-center flex-1 text-center truncate">
-            <span className="text-stone-300 font-medium truncate">
+          <div className="flex md:hidden items-center justify-center flex-1 text-center min-w-0 px-1">
+            <span className="text-stone-300 font-medium truncate text-[10px] sm:text-[11px] block">
               Complimentary Luxury Gift Packaging Over ₹999
             </span>
           </div>
@@ -175,29 +175,29 @@ export const Navbar: React.FC = () => {
 
       {/* 2. MAIN HEADER BAR */}
       <header
-        className={`sticky top-0 z-40 bg-white/95 backdrop-blur-md transition-all duration-200 border-b border-stone-200/80 ${
+        className={`sticky top-0 z-40 bg-white/95 backdrop-blur-md transition-all duration-200 border-b border-stone-200/80 w-full max-w-full ${
           isScrolled ? "shadow-md shadow-stone-900/5" : ""
         }`}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-20 gap-4 lg:gap-8">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16 sm:h-20 gap-2 sm:gap-4 lg:gap-8">
             
             {/* Zone 1 (Left): Hamburger (Mobile) + Brand Logo */}
-            <div className="flex items-center gap-3 flex-shrink-0">
+            <div className="flex items-center gap-1.5 sm:gap-3 flex-shrink-0 min-w-0">
               <button
                 onClick={() => setMobileMenuOpen(true)}
-                className="lg:hidden p-2 -ml-2 rounded-xl text-stone-700 hover:text-stone-950 hover:bg-stone-100 transition-colors"
+                className="lg:hidden p-1.5 -ml-1 sm:p-2 sm:-ml-2 rounded-xl text-stone-700 hover:text-stone-950 hover:bg-stone-100 transition-colors flex-shrink-0"
                 aria-label="Open navigation menu"
               >
-                <Menu className="w-6 h-6" />
+                <Menu className="w-5 h-5 sm:w-6 sm:h-6" />
               </button>
 
-              <Link href="/" className="flex items-center gap-2 group select-none">
-                <div className="flex items-center gap-1.5">
-                  <span className="text-2xl sm:text-[26px] font-black tracking-tight text-stone-950 group-hover:text-rose-600 transition-colors">
+              <Link href="/" className="flex items-center gap-1.5 sm:gap-2 group select-none flex-shrink-0">
+                <div className="flex items-center gap-1 sm:gap-1.5">
+                  <span className="text-xl sm:text-2xl lg:text-[26px] font-black tracking-tight text-stone-950 group-hover:text-rose-600 transition-colors">
                     GLIMGLEE
                   </span>
-                  <span className="w-2 h-2 rounded-full bg-rose-500 mb-1.5 group-hover:scale-125 transition-transform" />
+                  <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-rose-500 mb-1 sm:mb-1.5 group-hover:scale-125 transition-transform flex-shrink-0" />
                 </div>
               </Link>
             </div>
@@ -262,7 +262,7 @@ export const Navbar: React.FC = () => {
             </nav>
 
             {/* Zone 3 (Right): Search Bar + Wishlist + Cart + Account */}
-            <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+            <div className="flex items-center gap-1 sm:gap-2.5 flex-shrink-0">
               
               {/* Desktop Search Input with Autocomplete */}
               <div ref={searchRef} className="hidden md:block relative w-44 lg:w-56 xl:w-64">
@@ -343,21 +343,21 @@ export const Navbar: React.FC = () => {
               {/* Mobile Search Trigger Icon */}
               <button
                 onClick={() => setMobileSearchOpen(true)}
-                className="md:hidden w-10 h-10 rounded-full flex items-center justify-center text-stone-700 hover:text-stone-950 hover:bg-stone-100 transition-colors"
+                className="md:hidden w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-stone-700 hover:text-stone-950 hover:bg-stone-100 transition-colors flex-shrink-0"
                 aria-label="Search"
               >
-                <Search className="w-5 h-5" />
+                <Search className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
 
               {/* Wishlist Button */}
               <Link
                 href="/wishlist"
-                className="relative w-10 h-10 rounded-full flex items-center justify-center text-stone-700 hover:text-rose-600 hover:bg-rose-50/70 transition-colors flex-shrink-0"
+                className="relative w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-stone-700 hover:text-rose-600 hover:bg-rose-50/70 transition-colors flex-shrink-0"
                 aria-label="Wishlist"
               >
-                <Heart className="w-5 h-5" />
+                <Heart className="w-4 h-4 sm:w-5 sm:h-5" />
                 {wishlist.length > 0 && (
-                  <span className="absolute top-1 right-1 w-[18px] h-[18px] rounded-full bg-rose-500 text-white text-[10px] font-bold flex items-center justify-center shadow-xs">
+                  <span className="absolute top-0 right-0 sm:top-1 sm:right-1 w-4 h-4 sm:w-[18px] sm:h-[18px] rounded-full bg-rose-500 text-white text-[9px] sm:text-[10px] font-bold flex items-center justify-center shadow-xs">
                     {wishlist.length}
                   </span>
                 )}
@@ -366,27 +366,26 @@ export const Navbar: React.FC = () => {
               {/* Cart Drawer Trigger */}
               <button
                 onClick={openCart}
-                className="relative w-10 h-10 rounded-full flex items-center justify-center text-stone-700 hover:text-rose-600 hover:bg-rose-50/70 transition-colors flex-shrink-0"
+                className="relative w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-stone-700 hover:text-rose-600 hover:bg-rose-50/70 transition-colors flex-shrink-0"
                 aria-label="Shopping Cart"
               >
-                <ShoppingBag className="w-5 h-5" />
+                <ShoppingBag className="w-4 h-4 sm:w-5 sm:h-5" />
                 {itemCount > 0 && (
-                  <span className="absolute top-1 right-1 w-[18px] h-[18px] rounded-full bg-rose-600 text-white text-[10px] font-black flex items-center justify-center shadow-xs animate-scale-in">
+                  <span className="absolute top-0 right-0 sm:top-1 sm:right-1 w-4 h-4 sm:w-[18px] sm:h-[18px] rounded-full bg-rose-600 text-white text-[9px] sm:text-[10px] font-black flex items-center justify-center shadow-xs animate-scale-in">
                     {itemCount}
                   </span>
                 )}
               </button>
 
-              {/* Exclusive Admin Suite Button - ONLY VISIBLE TO LOGGED IN USERS WITH ADMIN ROLE */}
+              {/* Exclusive Admin Suite Button - ONLY VISIBLE TO LOGGED IN USERS WITH ADMIN ROLE ON TABLET/DESKTOP */}
               {isAdmin && (
                 <Link
                   href="/admin/dashboard"
-                  className="inline-flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3.5 sm:py-2 rounded-full bg-rose-600 hover:bg-rose-700 text-white text-[11px] sm:text-xs font-bold shadow-xs hover:shadow transition-all flex-shrink-0"
+                  className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-xs hover:shadow transition-all flex-shrink-0"
                   title="Open Administration Suite"
                 >
-                  <SlidersHorizontal className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                  <span className="hidden xs:inline sm:inline">Admin Panel</span>
-                  <span className="inline xs:hidden sm:hidden">Admin</span>
+                  <SlidersHorizontal className="w-3.5 h-3.5" />
+                  <span>Admin Panel</span>
                 </Link>
               )}
 
@@ -395,21 +394,21 @@ export const Navbar: React.FC = () => {
                 {user ? (
                   <button
                     onClick={() => setAccountMenuOpen(!accountMenuOpen)}
-                    className="flex items-center gap-2 p-1 pl-1.5 pr-2.5 rounded-full border border-stone-200 hover:border-stone-300 hover:bg-stone-50 transition-all flex-shrink-0"
+                    className="flex items-center gap-1.5 p-1 sm:pl-1.5 sm:pr-2.5 rounded-full border border-stone-200 hover:border-stone-300 hover:bg-stone-50 transition-all flex-shrink-0"
                     aria-label="Account Menu"
                   >
-                    <div className="w-7 h-7 rounded-full bg-rose-100 text-rose-800 font-bold text-xs flex items-center justify-center border border-rose-200">
+                    <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-rose-100 text-rose-800 font-bold text-[11px] sm:text-xs flex items-center justify-center border border-rose-200 flex-shrink-0">
                       {user.displayName ? user.displayName.charAt(0).toUpperCase() : "U"}
                     </div>
                     <span className="text-xs font-semibold text-stone-800 max-w-[80px] truncate hidden md:inline-block">
                       {user.displayName?.split(" ")[0]}
                     </span>
-                    <ChevronDown className="w-3.5 h-3.5 text-stone-400" />
+                    <ChevronDown className="w-3.5 h-3.5 text-stone-400 hidden sm:block" />
                   </button>
                 ) : (
                   <Link
                     href={loginTargetUrl}
-                    className="hidden sm:inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-stone-950 hover:bg-stone-800 text-white text-xs font-semibold whitespace-nowrap flex-shrink-0 shadow-sm transition-all hover:shadow"
+                    className="hidden sm:inline-flex items-center gap-2 px-4 py-2 sm:px-5 sm:py-2.5 rounded-full bg-stone-950 hover:bg-stone-800 text-white text-xs font-semibold whitespace-nowrap flex-shrink-0 shadow-sm transition-all hover:shadow"
                   >
                     <User className="w-3.5 h-3.5 flex-shrink-0" />
                     <span className="whitespace-nowrap">Sign In</span>

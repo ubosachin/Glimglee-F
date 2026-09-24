@@ -233,19 +233,19 @@ export default function ProductDetailPage() {
   const totalPrice = product.price * quantity + (giftWrap ? 99 : 0);
 
   return (
-    <div className="py-6 sm:py-10 pb-28 md:pb-16 space-y-12">
+    <div className="py-6 sm:py-10 pb-28 md:pb-16 space-y-12 w-full max-w-full overflow-x-hidden">
       <Container>
         {/* Breadcrumb Navigation */}
-        <nav className="flex items-center gap-2 text-xs text-stone-500 mb-6 truncate">
-          <Link href="/" className="hover:text-rose-600">Home</Link>
-          <span>/</span>
-          <Link href="/shop" className="hover:text-rose-600">Gifts</Link>
-          <span>/</span>
-          <Link href={`/category/${product.categoryId}`} className="hover:text-rose-600 capitalize">
+        <nav className="flex items-center gap-1.5 sm:gap-2 text-xs text-stone-500 mb-6 overflow-x-auto whitespace-nowrap scrollbar-none max-w-full py-1">
+          <Link href="/" className="hover:text-rose-600 flex-shrink-0">Home</Link>
+          <span className="flex-shrink-0">/</span>
+          <Link href="/shop" className="hover:text-rose-600 flex-shrink-0">Gifts</Link>
+          <span className="flex-shrink-0">/</span>
+          <Link href={`/category/${product.categoryId}`} className="hover:text-rose-600 capitalize flex-shrink-0">
             {product.category || product.categoryId.replace(/-/g, " ")}
           </Link>
-          <span>/</span>
-          <span className="text-stone-900 font-semibold truncate">{title}</span>
+          <span className="flex-shrink-0">/</span>
+          <span className="text-stone-900 font-semibold truncate max-w-[200px] sm:max-w-none">{title}</span>
         </nav>
 
         {/* Main Product Showcase Grid */}
@@ -758,7 +758,7 @@ export default function ProductDetailPage() {
       </Container>
 
       {/* MOBILE STICKY BOTTOM ACTION BAR (Section 26) */}
-      <div className="md:hidden fixed bottom-0 inset-x-0 bg-white/95 backdrop-blur-md border-t border-stone-200 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] z-40 shadow-2xl flex items-center justify-between gap-3">
+      <div className="md:hidden fixed bottom-0 left-0 right-0 w-full max-w-full bg-white/95 backdrop-blur-md border-t border-stone-200 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] z-40 shadow-2xl flex items-center justify-between gap-3">
         <div>
           <span className="text-[9px] uppercase font-bold text-stone-400 block leading-tight">Total</span>
           <span className="text-base font-black text-stone-900 font-mono">
