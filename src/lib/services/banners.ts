@@ -68,7 +68,7 @@ export async function getBanners(placement?: Banner["placement"]): Promise<Banne
     } else {
       try {
         const url = placement ? `/api/banners?placement=${encodeURIComponent(placement)}` : "/api/banners";
-        const res = await fetch(url, { cache: "no-store" });
+        const res = await fetch(url);
         if (res.ok) {
           const data = await res.json();
           if (Array.isArray(data.banners)) {

@@ -64,8 +64,14 @@ export async function getProducts(options?: ProductFilterOptions): Promise<Produ
   // Check in-memory cache first
   if (productsCache && now - productsCache.timestamp < CACHE_TTL_MS) {
     list = productsCache.data;
-  } else {
-    // If running on the server, we can query MongoDB directly
+    // Check local storage for instant zero-latency start
+    if (typeof window !== "undefined") {
+      const local = getLocalProducts();
+      if (local.length > 0) {
+        list = local;
+      }
+    }
+
     if (typeof window === "undefined") {
       try {
         const { getDb, isMongoConfigured } = await import("@/lib/mongodb/client");
@@ -82,9 +88,9 @@ export async function getProducts(options?: ProductFilterOptions): Promise<Produ
         console.warn("Server direct MongoDB getProducts error:", err);
       }
     } else {
-      // In the browser, fetch from the /api/products route
+      // In the browser, fetch from the /api/products route with Edge caching
       try {
-        const res = await fetch("/api/products", { cache: "no-store" });
+        const res = await fetch("/api/products");
         if (res.ok) {
           const data = await res.json();
           if (Array.isArray(data.products) && data.products.length > 0) {

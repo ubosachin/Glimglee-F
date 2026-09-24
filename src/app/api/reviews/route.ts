@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDb, isMongoConfigured } from "@/lib/mongodb/client";
+import { getOrSetCache, invalidateCacheKey } from "@/lib/cache/apiCache";
 import { Review } from "@/lib/types";
 
 export async function GET(req: NextRequest) {
@@ -8,20 +9,30 @@ export async function GET(req: NextRequest) {
     const productId = searchParams.get("productId");
     const status = searchParams.get("status");
 
-    if (!isMongoConfigured) {
-      return NextResponse.json({ reviews: [] });
-    }
+    const cacheKey = `reviews:${productId || "all"}:${status || "default"}`;
 
-    const db = await getDb();
-    const col = db.collection<Review>("reviews");
+    const data = await getOrSetCache(cacheKey, 60, async () => {
+      if (!isMongoConfigured) {
+        return { reviews: [] };
+      }
 
-    const filter: any = {};
-    if (productId) filter.productId = productId;
-    if (status) filter.status = status;
-    else if (productId) filter.status = "approved"; // Public views only approved
+      const db = await getDb();
+      const col = db.collection<Review>("reviews");
 
-    const reviews = await col.find(filter).sort({ createdAt: -1 }).toArray();
-    return NextResponse.json({ reviews });
+      const filter: any = {};
+      if (productId) filter.productId = productId;
+      if (status) filter.status = status;
+      else if (productId) filter.status = "approved"; // Public views only approved
+
+      const reviews = await col.find(filter).sort({ createdAt: -1 }).toArray();
+      return { reviews };
+    });
+
+    return NextResponse.json(data, {
+      headers: {
+        "Cache-Control": "public, s-maxage=60, stale-while-revalidate=600",
+      },
+    });
   } catch (err: any) {
     console.error("GET /api/reviews error:", err);
     return NextResponse.json({ error: err?.message, reviews: [] }, { status: 500 });
@@ -38,6 +49,9 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
+
+    // Invalidate reviews cache
+    invalidateCacheKey("reviews");
 
     const newReview: Review = {
       ...reviewData,
@@ -63,10 +77,12 @@ export async function POST(req: NextRequest) {
 export async function PATCH(req: NextRequest) {
   try {
     const { id, status } = await req.json();
-
     if (!id || !status) {
       return NextResponse.json({ error: "id and status are required" }, { status: 400 });
     }
+
+    // Invalidate reviews cache
+    invalidateCacheKey("reviews");
 
     if (!isMongoConfigured) {
       return NextResponse.json({ success: true });

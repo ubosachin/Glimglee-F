@@ -40,6 +40,17 @@ export default function HomePage() {
   const [pincodeStatus, setPincodeStatus] = useState<string | null>(null);
 
   useEffect(() => {
+    // Instant hydration from local client cache for instant 0ms first render
+    try {
+      const localProds = localStorage.getItem("glimglee_live_products");
+      const localCats = localStorage.getItem("glimglee_live_categories");
+      const localCms = localStorage.getItem("glimglee_db_cms");
+      if (localProds) setProducts(JSON.parse(localProds));
+      if (localCats) setCategories(JSON.parse(localCats));
+      if (localCms) setCms(JSON.parse(localCms));
+      if (localProds && localCats) setLoading(false);
+    } catch {}
+
     async function loadData() {
       try {
         const [prods, cats, bnrList, cmsData, revs] = await Promise.all([

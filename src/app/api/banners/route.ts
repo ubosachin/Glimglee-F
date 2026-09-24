@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDb, isMongoConfigured } from "@/lib/mongodb/client";
+import { getOrSetCache, invalidateCacheKey } from "@/lib/cache/apiCache";
 import { Banner } from "@/lib/types";
 
 export async function GET(req: NextRequest) {
@@ -8,23 +9,33 @@ export async function GET(req: NextRequest) {
     const placement = searchParams.get("placement");
     const activeOnly = searchParams.get("active") === "true";
 
-    if (!isMongoConfigured) {
-      return NextResponse.json({ banners: [] });
-    }
+    const cacheKey = `banners:${placement || "all"}:${activeOnly}`;
 
-    const db = await getDb();
-    const col = db.collection<Banner>("banners");
+    const data = await getOrSetCache(cacheKey, 120, async () => {
+      if (!isMongoConfigured) {
+        return { banners: [] };
+      }
 
-    const filter: any = {};
-    if (placement) filter.placement = placement;
-    if (activeOnly) filter.active = true;
+      const db = await getDb();
+      const col = db.collection<Banner>("banners");
 
-    const banners = await col
-      .find(filter)
-      .sort({ priority: 1, createdAt: -1 })
-      .toArray();
+      const filter: any = {};
+      if (placement) filter.placement = placement;
+      if (activeOnly) filter.active = true;
 
-    return NextResponse.json({ banners });
+      const banners = await col
+        .find(filter)
+        .sort({ priority: 1, createdAt: -1 })
+        .toArray();
+
+      return { banners };
+    });
+
+    return NextResponse.json(data, {
+      headers: {
+        "Cache-Control": "public, s-maxage=120, stale-while-revalidate=600",
+      },
+    });
   } catch (err: any) {
     console.error("GET /api/banners error:", err);
     return NextResponse.json({ error: err?.message, banners: [] }, { status: 500 });
@@ -38,6 +49,9 @@ export async function POST(req: NextRequest) {
     if (!banner || !banner.title) {
       return NextResponse.json({ error: "Banner title is required" }, { status: 400 });
     }
+
+    // Invalidate banners cache immediately
+    invalidateCacheKey("banners");
 
     const id = banner.id || `bnr_${Date.now()}`;
     const payload = {
@@ -68,6 +82,9 @@ export async function DELETE(req: NextRequest) {
     if (!id) {
       return NextResponse.json({ error: "Banner id is required" }, { status: 400 });
     }
+
+    // Invalidate banners cache immediately
+    invalidateCacheKey("banners");
 
     if (!isMongoConfigured) {
       return NextResponse.json({ success: true });

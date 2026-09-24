@@ -52,6 +52,12 @@ export const Navbar: React.FC = () => {
   const accountRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLDivElement>(null);
 
+  // Return to current page after login
+  const loginTargetUrl =
+    pathname && pathname !== "/login" && pathname !== "/register"
+      ? `/login?redirect=${encodeURIComponent(pathname)}`
+      : "/login";
+
   // Load dynamic categories
   useEffect(() => {
     getCategories().then(setCategories);
@@ -410,7 +416,7 @@ export const Navbar: React.FC = () => {
                   </button>
                 ) : (
                   <Link
-                    href="/login"
+                    href={loginTargetUrl}
                     className="hidden sm:inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-stone-950 hover:bg-stone-800 text-white text-xs font-semibold whitespace-nowrap flex-shrink-0 shadow-sm transition-all hover:shadow"
                   >
                     <User className="w-3.5 h-3.5 flex-shrink-0" />
@@ -693,7 +699,7 @@ export const Navbar: React.FC = () => {
                   </div>
                   <div className="flex gap-2">
                     <Link
-                      href="/login"
+                      href={loginTargetUrl}
                       onClick={() => setMobileMenuOpen(false)}
                       className="flex-1 py-2.5 rounded-xl bg-stone-900 text-white text-xs font-bold text-center hover:bg-stone-800 transition-colors"
                     >

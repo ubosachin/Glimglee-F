@@ -1,23 +1,32 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDb, isMongoConfigured } from "@/lib/mongodb/client";
+import { getOrSetCache, invalidateCacheKey } from "@/lib/cache/apiCache";
 import { defaultCMS } from "@/lib/config/defaults";
 import { HomepageCMS } from "@/lib/types";
 
 export async function GET() {
   try {
-    if (!isMongoConfigured) {
-      return NextResponse.json({ cms: defaultCMS });
-    }
+    const data = await getOrSetCache("cms:homepage", 180, async () => {
+      if (!isMongoConfigured) {
+        return { cms: defaultCMS };
+      }
 
-    const db = await getDb();
-    const doc = await db.collection("cms").findOne({ _id: "homepage" as any });
+      const db = await getDb();
+      const doc = await db.collection("cms").findOne({ _id: "homepage" as any });
 
-    if (!doc) {
-      return NextResponse.json({ cms: defaultCMS });
-    }
+      if (!doc) {
+        return { cms: defaultCMS };
+      }
 
-    const { _id, ...cms } = doc as any;
-    return NextResponse.json({ cms });
+      const { _id, ...cms } = doc as any;
+      return { cms };
+    });
+
+    return NextResponse.json(data, {
+      headers: {
+        "Cache-Control": "public, s-maxage=180, stale-while-revalidate=600",
+      },
+    });
   } catch (err: any) {
     console.error("GET /api/cms error:", err);
     return NextResponse.json({ cms: defaultCMS });
@@ -27,6 +36,9 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   try {
     const cms: HomepageCMS = await req.json();
+
+    // Invalidate CMS cache
+    invalidateCacheKey("cms");
 
     if (!isMongoConfigured) {
       return NextResponse.json({ success: true, cms });

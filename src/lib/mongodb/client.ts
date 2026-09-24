@@ -14,19 +14,17 @@ let clientPromise: Promise<MongoClient> | null = null;
 export const isMongoConfigured = Boolean(uri && uri.trim().length > 0);
 
 if (isMongoConfigured) {
-  if (process.env.NODE_ENV === "development") {
-    // In development mode, use a global variable so that the value
-    // is preserved across module reloads caused by HMR (Hot Module Replacement).
-    if (!global._mongoClientPromise) {
-      client = new MongoClient(uri);
-      global._mongoClientPromise = client.connect();
-    }
-    clientPromise = global._mongoClientPromise;
-  } else {
-    // In production mode, it's best to not use a global variable.
-    client = new MongoClient(uri);
-    clientPromise = client.connect();
+  if (!global._mongoClientPromise) {
+    client = new MongoClient(uri, {
+      maxPoolSize: 10,
+      minPoolSize: 1,
+      serverSelectionTimeoutMS: 5000,
+      connectTimeoutMS: 10000,
+      maxIdleTimeMS: 30000,
+    });
+    global._mongoClientPromise = client.connect();
   }
+  clientPromise = global._mongoClientPromise;
 }
 
 export async function getMongoClient(): Promise<MongoClient> {

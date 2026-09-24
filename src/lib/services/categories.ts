@@ -47,7 +47,14 @@ export async function getCategories(includeInactive = false): Promise<Category[]
 
   if (categoriesCache && now - categoriesCache.timestamp < CACHE_TTL_MS) {
     list = categoriesCache.data;
-  } else {
+    // Check local storage for instant zero-latency start
+    if (typeof window !== "undefined") {
+      const local = getLocalCategories();
+      if (local.length > 0) {
+        list = local;
+      }
+    }
+
     if (typeof window === "undefined") {
       try {
         const { getDb, isMongoConfigured } = await import("@/lib/mongodb/client");
@@ -66,9 +73,7 @@ export async function getCategories(includeInactive = false): Promise<Category[]
       }
     } else {
       try {
-        const res = await fetch(`/api/categories?includeInactive=${includeInactive}`, {
-          cache: "no-store",
-        });
+        const res = await fetch(`/api/categories?includeInactive=${includeInactive}`);
         if (res.ok) {
           const data = await res.json();
           if (Array.isArray(data.categories)) {

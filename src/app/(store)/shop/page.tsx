@@ -57,8 +57,15 @@ function ShopContent() {
   }, [search, selectedCategory, priceRange, selectedOccasion, minRating, onlyPersonalized, sortBy]);
 
   useEffect(() => {
+    try {
+      const localProds = localStorage.getItem("glimglee_live_products");
+      const localCats = localStorage.getItem("glimglee_live_categories");
+      if (localProds) setProducts(JSON.parse(localProds));
+      if (localCats) setCategories(JSON.parse(localCats));
+      if (localProds && localCats) setLoading(false);
+    } catch {}
+
     async function load() {
-      setLoading(true);
       try {
         const [prods, cats] = await Promise.all([getProducts(), getCategories()]);
         setProducts(prods);

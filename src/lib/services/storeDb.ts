@@ -109,7 +109,7 @@ export async function adjustProductStock(
 export async function getCMSContent(): Promise<HomepageCMS> {
   if (typeof window !== "undefined") {
     try {
-      const res = await fetch("/api/cms", { cache: "no-store" });
+      const res = await fetch("/api/cms");
       if (res.ok) {
         const data = await res.json();
         if (data.cms) {
@@ -175,7 +175,7 @@ export async function updateCMSContent(cms: HomepageCMS): Promise<HomepageCMS> {
 export async function getStoreSettings(): Promise<StoreSettings> {
   if (typeof window !== "undefined") {
     try {
-      const res = await fetch("/api/settings", { cache: "no-store" });
+      const res = await fetch("/api/settings");
       if (res.ok) {
         const data = await res.json();
         if (data.settings) {
@@ -244,7 +244,7 @@ export async function getReviews(productId?: string): Promise<Review[]> {
   if (typeof window !== "undefined") {
     try {
       const url = productId ? `/api/reviews?productId=${encodeURIComponent(productId)}` : "/api/reviews";
-      const res = await fetch(url, { cache: "no-store" });
+      const res = await fetch(url);
       if (res.ok) {
         const data = await res.json();
         if (Array.isArray(data.reviews)) {

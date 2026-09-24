@@ -1,28 +1,72 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { useToast } from "@/components/ui/Toast";
 import GoogleSignInButton from "@/components/auth/GoogleSignInButton";
-import { ArrowLeft, ShieldCheck, CheckCircle2, User, LogOut, ExternalLink } from "lucide-react";
+import { ArrowLeft, ShieldCheck, CheckCircle2, User, LogOut, ExternalLink, ArrowRight } from "lucide-react";
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
-  const { user, logout, isAdmin, isManager } = useAuth();
+  const searchParams = useSearchParams();
+  const redirectParam = searchParams.get("redirect");
+  const { user, logout, isAdmin } = useAuth();
   const { toast } = useToast();
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  // Store return URL in session storage if provided or from referrer
+  useEffect(() => {
+    if (redirectParam) {
+      sessionStorage.setItem("glimglee_return_url", redirectParam);
+    } else if (typeof document !== "undefined" && document.referrer) {
+      try {
+        const refUrl = new URL(document.referrer);
+        if (
+          refUrl.origin === window.location.origin &&
+          refUrl.pathname !== "/login" &&
+          refUrl.pathname !== "/register"
+        ) {
+          sessionStorage.setItem("glimglee_return_url", refUrl.pathname + refUrl.search);
+        }
+      } catch {}
+    }
+  }, [redirectParam]);
 
   const handleSuccess = () => {
     toast("Welcome back!", "success");
     const stored = typeof window !== "undefined" ? localStorage.getItem("glimglee_auth_user") : null;
     const parsed = stored ? JSON.parse(stored) : null;
+
+    // Check redirect target
+    const targetUrl =
+      redirectParam ||
+      (typeof window !== "undefined" ? sessionStorage.getItem("glimglee_return_url") : null);
+
+    if (typeof window !== "undefined") {
+      sessionStorage.removeItem("glimglee_return_url");
+    }
+
+    // 1. If explicit return destination exists (e.g. from /cart, /checkout, /products/...)
+    if (
+      targetUrl &&
+      targetUrl.startsWith("/") &&
+      targetUrl !== "/login" &&
+      targetUrl !== "/register"
+    ) {
+      router.push(targetUrl);
+      return;
+    }
+
+    // 2. If Admin with no specific prior page, route to dashboard
     if (parsed?.role === "ADMIN" || parsed?.role === "SUPER_ADMIN") {
       router.push("/admin/dashboard");
-    } else {
-      router.push("/account");
+      return;
     }
+
+    // 3. Otherwise return to the storefront home/shop
+    router.push("/");
   };
 
   const handleError = (msg: string) => {
@@ -30,16 +74,18 @@ export default function LoginPage() {
     toast(msg, "error");
   };
 
+  const backUrl = redirectParam && redirectParam.startsWith("/") ? redirectParam : "/";
+
   return (
     <div className="min-h-[100dvh] bg-[#FAF8F5] text-stone-900 flex flex-col justify-between px-4 sm:px-6 py-6 sm:py-10 selection:bg-rose-500 selection:text-white">
       {/* Top Header / Back Link */}
       <header className="max-w-md w-full mx-auto flex items-center justify-between">
         <Link
-          href="/"
+          href={backUrl}
           className="inline-flex items-center gap-1.5 text-xs font-medium text-stone-500 hover:text-stone-900 transition-colors"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
-          <span>Back to store</span>
+          <span>{redirectParam ? "Return to previous page" : "Back to store"}</span>
         </Link>
 
         <span className="text-[11px] text-stone-400 font-medium">Glimglee Account</span>
@@ -103,18 +149,27 @@ export default function LoginPage() {
               </div>
 
               <div className="space-y-2">
+                <button
+                  type="button"
+                  onClick={handleSuccess}
+                  className="w-full h-11 rounded-xl bg-stone-900 hover:bg-stone-800 text-white text-xs font-semibold flex items-center justify-center gap-2 transition-colors cursor-pointer"
+                >
+                  <span>{redirectParam ? "Continue to your page" : "Continue to Store"}</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+
                 <Link
                   href="/account"
-                  className="w-full h-11 rounded-xl bg-stone-900 hover:bg-stone-800 text-white text-xs font-semibold flex items-center justify-center gap-2 transition-colors"
+                  className="w-full h-10 rounded-xl border border-stone-200 hover:bg-stone-50 text-stone-700 text-xs font-semibold flex items-center justify-center gap-2 transition-colors"
                 >
                   <User className="w-4 h-4" />
-                  <span>Go to My Account</span>
+                  <span>View Account Profile</span>
                 </Link>
 
                 {isAdmin && (
                   <Link
                     href="/admin/dashboard"
-                    className="w-full h-11 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold flex items-center justify-center gap-2 transition-colors"
+                    className="w-full h-10 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold flex items-center justify-center gap-2 transition-colors"
                   >
                     <span>Open Admin Dashboard</span>
                     <ExternalLink className="w-3.5 h-3.5" />
@@ -127,7 +182,7 @@ export default function LoginPage() {
                     logout();
                     toast("Signed out successfully", "info");
                   }}
-                  className="w-full h-10 rounded-xl border border-stone-200 hover:bg-stone-50 text-stone-600 text-xs font-medium flex items-center justify-center gap-1.5 transition-colors"
+                  className="w-full h-10 rounded-xl border border-stone-200 hover:bg-stone-50 text-stone-600 text-xs font-medium flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
                 >
                   <LogOut className="w-3.5 h-3.5" />
                   <span>Sign out</span>
@@ -171,5 +226,13 @@ export default function LoginPage() {
         <p>© {new Date().getFullYear()} Glimglee Modern Gifting</p>
       </footer>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#FAF8F5] flex items-center justify-center text-xs text-stone-400">Loading sign in...</div>}>
+      <LoginForm />
+    </Suspense>
   );
 }

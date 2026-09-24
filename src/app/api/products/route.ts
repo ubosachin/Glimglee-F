@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDb, isMongoConfigured } from "@/lib/mongodb/client";
+import { getOrSetCache, invalidateCacheKey } from "@/lib/cache/apiCache";
 import { Product } from "@/lib/types";
 
 export async function GET(req: NextRequest) {
@@ -18,72 +19,81 @@ export async function GET(req: NextRequest) {
     const limit = parseInt(searchParams.get("limit") || "100", 10);
     const offset = parseInt(searchParams.get("offset") || "0", 10);
 
-    if (!isMongoConfigured) {
-      return NextResponse.json({ products: [] });
-    }
+    const cacheKey = `products:${req.nextUrl.search || "all"}`;
 
-    const db = await getDb();
-    const col = db.collection<Product>("products");
+    const data = await getOrSetCache(cacheKey, 60, async () => {
+      if (!isMongoConfigured) {
+        return { products: [] };
+      }
 
-    if (slug) {
-      const product = await col.findOne({ slug });
-      return NextResponse.json({ product: product || null });
-    }
+      const db = await getDb();
+      const col = db.collection<Product>("products");
 
-    if (id) {
-      const product = await col.findOne({ id });
-      return NextResponse.json({ product: product || null });
-    }
+      if (slug) {
+        const product = await col.findOne({ slug });
+        return { product: product || null };
+      }
 
-    // Build filter query
-    const filter: any = {};
+      if (id) {
+        const product = await col.findOne({ id });
+        return { product: product || null };
+      }
 
-    if (category && category !== "all") {
-      filter.$or = [{ categorySlug: category }, { categoryId: category }];
-    }
+      // Build filter query
+      const filter: any = {};
 
-    if (categoryId && categoryId !== "all") {
-      filter.categoryId = categoryId;
-    }
+      if (category && category !== "all") {
+        filter.$or = [{ categorySlug: category }, { categoryId: category }];
+      }
 
-    if (occasion && occasion !== "all") {
-      filter.occasions = { $in: [occasion] };
-    }
+      if (categoryId && categoryId !== "all") {
+        filter.categoryId = categoryId;
+      }
 
-    if (isCustomizable === "true") {
-      filter.isCustomizable = true;
-    }
+      if (occasion && occasion !== "all") {
+        filter.occasions = { $in: [occasion] };
+      }
 
-    if (minPrice || maxPrice) {
-      filter.price = {};
-      if (minPrice) filter.price.$gte = Number(minPrice);
-      if (maxPrice) filter.price.$lte = Number(maxPrice);
-    }
+      if (isCustomizable === "true") {
+        filter.isCustomizable = true;
+      }
 
-    if (search) {
-      filter.$or = [
-        { name: { $regex: search, $options: "i" } },
-        { title: { $regex: search, $options: "i" } },
-        { description: { $regex: search, $options: "i" } },
-        { tags: { $in: [new RegExp(search, "i")] } },
-      ];
-    }
+      if (minPrice || maxPrice) {
+        filter.price = {};
+        if (minPrice) filter.price.$gte = Number(minPrice);
+        if (maxPrice) filter.price.$lte = Number(maxPrice);
+      }
 
-    // Sorting
-    let sortOptions: any = { createdAt: -1 };
-    if (sort === "price-asc") sortOptions = { price: 1 };
-    else if (sort === "price-desc") sortOptions = { price: -1 };
-    else if (sort === "rating") sortOptions = { rating: -1, reviewCount: -1 };
-    else if (sort === "bestseller") sortOptions = { bestseller: -1, rating: -1 };
+      if (search) {
+        filter.$or = [
+          { name: { $regex: search, $options: "i" } },
+          { description: { $regex: search, $options: "i" } },
+          { tags: { $in: [new RegExp(search, "i")] } },
+        ];
+      }
 
-    const products = await col
-      .find(filter)
-      .sort(sortOptions)
-      .skip(offset)
-      .limit(limit)
-      .toArray();
+      // Sorting
+      let sortOptions: any = { createdAt: -1 };
+      if (sort === "price-asc") sortOptions = { price: 1 };
+      else if (sort === "price-desc") sortOptions = { price: -1 };
+      else if (sort === "rating") sortOptions = { rating: -1, reviewCount: -1 };
+      else if (sort === "bestseller") sortOptions = { bestseller: -1, rating: -1 };
 
-    return NextResponse.json({ products });
+      const products = await col
+        .find(filter)
+        .sort(sortOptions)
+        .skip(offset)
+        .limit(limit)
+        .toArray();
+
+      return { products };
+    });
+
+    return NextResponse.json(data, {
+      headers: {
+        "Cache-Control": "public, s-maxage=60, stale-while-revalidate=600",
+      },
+    });
   } catch (err: any) {
     console.error("GET /api/products error:", err);
     return NextResponse.json({ error: err?.message, products: [] }, { status: 500 });
@@ -97,6 +107,9 @@ export async function POST(req: NextRequest) {
     if (!product || !product.name) {
       return NextResponse.json({ error: "Product name is required" }, { status: 400 });
     }
+
+    // Invalidate products cache immediately
+    invalidateCacheKey("products");
 
     if (!isMongoConfigured) {
       return NextResponse.json({
@@ -129,6 +142,9 @@ export async function DELETE(req: NextRequest) {
     if (!id) {
       return NextResponse.json({ error: "Product id is required" }, { status: 400 });
     }
+
+    // Invalidate products cache immediately
+    invalidateCacheKey("products");
 
     if (!isMongoConfigured) {
       return NextResponse.json({ success: true });

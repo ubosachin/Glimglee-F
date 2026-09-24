@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDb, isMongoConfigured } from "@/lib/mongodb/client";
+import { getOrSetCache, invalidateCacheKey } from "@/lib/cache/apiCache";
 import { Category } from "@/lib/types";
 
 export async function GET(req: NextRequest) {
@@ -9,34 +10,44 @@ export async function GET(req: NextRequest) {
     const id = searchParams.get("id");
     const includeInactive = searchParams.get("includeInactive") === "true";
 
-    if (!isMongoConfigured) {
-      return NextResponse.json({ categories: [] });
-    }
+    const cacheKey = `categories:${slug || ""}:${id || ""}:${includeInactive}`;
 
-    const db = await getDb();
-    const col = db.collection<Category>("categories");
+    const data = await getOrSetCache(cacheKey, 120, async () => {
+      if (!isMongoConfigured) {
+        return { categories: [] };
+      }
 
-    if (slug) {
-      const category = await col.findOne({ slug });
-      return NextResponse.json({ category: category || null });
-    }
+      const db = await getDb();
+      const col = db.collection<Category>("categories");
 
-    if (id) {
-      const category = await col.findOne({ id });
-      return NextResponse.json({ category: category || null });
-    }
+      if (slug) {
+        const category = await col.findOne({ slug });
+        return { category: category || null };
+      }
 
-    const filter: any = {};
-    if (!includeInactive) {
-      filter.active = { $ne: false };
-    }
+      if (id) {
+        const category = await col.findOne({ id });
+        return { category: category || null };
+      }
 
-    const categories = await col
-      .find(filter)
-      .sort({ order: 1, createdAt: -1 })
-      .toArray();
+      const filter: any = {};
+      if (!includeInactive) {
+        filter.active = { $ne: false };
+      }
 
-    return NextResponse.json({ categories });
+      const categories = await col
+        .find(filter)
+        .sort({ order: 1, createdAt: -1 })
+        .toArray();
+
+      return { categories };
+    });
+
+    return NextResponse.json(data, {
+      headers: {
+        "Cache-Control": "public, s-maxage=120, stale-while-revalidate=600",
+      },
+    });
   } catch (err: any) {
     console.error("GET /api/categories error:", err);
     return NextResponse.json({ error: err?.message, categories: [] }, { status: 500 });
@@ -50,6 +61,9 @@ export async function POST(req: NextRequest) {
     if (!category || !category.name) {
       return NextResponse.json({ error: "Category name is required" }, { status: 400 });
     }
+
+    // Invalidate categories cache immediately
+    invalidateCacheKey("categories");
 
     const id = category.id || `cat_${Date.now()}`;
     const payload = {
@@ -81,6 +95,9 @@ export async function DELETE(req: NextRequest) {
     if (!id) {
       return NextResponse.json({ error: "Category id is required" }, { status: 400 });
     }
+
+    // Invalidate categories cache immediately
+    invalidateCacheKey("categories");
 
     if (!isMongoConfigured) {
       return NextResponse.json({ success: true });

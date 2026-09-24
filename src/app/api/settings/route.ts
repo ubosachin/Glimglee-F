@@ -1,23 +1,32 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDb, isMongoConfigured } from "@/lib/mongodb/client";
+import { getOrSetCache, invalidateCacheKey } from "@/lib/cache/apiCache";
 import { defaultStoreSettings } from "@/lib/config/defaults";
 import { StoreSettings } from "@/lib/types";
 
 export async function GET() {
   try {
-    if (!isMongoConfigured) {
-      return NextResponse.json({ settings: defaultStoreSettings });
-    }
+    const data = await getOrSetCache("settings:store", 300, async () => {
+      if (!isMongoConfigured) {
+        return { settings: defaultStoreSettings };
+      }
 
-    const db = await getDb();
-    const doc = await db.collection("settings").findOne({ _id: "store" as any });
+      const db = await getDb();
+      const doc = await db.collection("settings").findOne({ _id: "store" as any });
 
-    if (!doc) {
-      return NextResponse.json({ settings: defaultStoreSettings });
-    }
+      if (!doc) {
+        return { settings: defaultStoreSettings };
+      }
 
-    const { _id, ...settings } = doc as any;
-    return NextResponse.json({ settings });
+      const { _id, ...settings } = doc as any;
+      return { settings };
+    });
+
+    return NextResponse.json(data, {
+      headers: {
+        "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600",
+      },
+    });
   } catch (err: any) {
     console.error("GET /api/settings error:", err);
     return NextResponse.json({ settings: defaultStoreSettings });
@@ -27,6 +36,9 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   try {
     const settings: StoreSettings = await req.json();
+
+    // Invalidate settings cache
+    invalidateCacheKey("settings");
 
     if (!isMongoConfigured) {
       return NextResponse.json({ success: true, settings });
