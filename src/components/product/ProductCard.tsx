@@ -90,8 +90,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           )}
         </Link>
 
-        {/* Status Badges */}
-        <div className="absolute top-2.5 left-2.5 flex flex-col gap-1 pointer-events-none z-10">
+        {/* Status Badges - Horizontal wrap so they don't cover the image */}
+        <div className="absolute top-2.5 left-2.5 right-12 flex flex-wrap gap-1 pointer-events-none z-10">
           {product.bestseller && (
             <span className="px-2 py-0.5 rounded-full bg-amber-500 text-white text-[9px] sm:text-[10px] font-black tracking-wider uppercase shadow-xs">
               BESTSELLER
@@ -112,7 +112,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         {/* Wishlist Heart Button - Touch target >= 44px */}
         <button
           onClick={handleWishlistToggle}
-          className={`absolute top-2 right-2 min-w-[40px] min-h-[40px] w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200 shadow-sm z-20 ${
+          className={`absolute top-2.5 right-2.5 min-w-[38px] min-h-[38px] w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center transition-all duration-200 shadow-sm z-20 ${
             isFavorited
               ? "bg-rose-50 text-rose-600 ring-2 ring-rose-200"
               : "bg-white/90 text-stone-600 hover:text-rose-600 hover:bg-white"
@@ -139,13 +139,13 @@ export const ProductCard: React.FC<ProductCardProps> = ({
       </div>
 
       {/* Product Content Details */}
-      <div className="p-3 sm:p-4 flex-1 flex flex-col justify-between space-y-3">
-        <div className="space-y-1">
+      <div className="p-3.5 sm:p-5 flex-1 flex flex-col justify-between space-y-3.5">
+        <div className="space-y-1.5">
           {/* Rating & Stock Indicator */}
-          <div className="flex items-center justify-between text-[11px] text-stone-500">
+          <div className="flex items-center justify-between text-[11px] sm:text-xs text-stone-500">
             {product.rating > 0 ? (
               <div className="flex items-center gap-1">
-                <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+                <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
                 <span className="font-bold text-stone-800">{product.rating.toFixed(1)}</span>
                 {product.reviewCount > 0 && (
                   <span className="text-[10px] text-stone-400">({product.reviewCount})</span>
@@ -164,17 +164,17 @@ export const ProductCard: React.FC<ProductCardProps> = ({
 
           {/* Product Title */}
           <Link href={`/products/${product.slug}`} className="block">
-            <h3 className="text-xs sm:text-sm font-bold text-stone-900 group-hover:text-rose-600 transition-colors line-clamp-2 leading-snug">
+            <h3 className="text-xs sm:text-sm md:text-[15px] font-bold text-stone-900 group-hover:text-rose-600 transition-colors line-clamp-2 leading-snug min-h-[2.25rem] sm:min-h-[2.5rem]">
               {title}
             </h3>
           </Link>
         </div>
 
         {/* Price & Add to Bag CTA */}
-        <div className="pt-2 border-t border-stone-100 flex items-center justify-between gap-2">
-          <div className="flex flex-col">
-            <div className="flex items-baseline gap-1 sm:gap-1.5 flex-wrap">
-              <span className="text-sm sm:text-base font-black text-stone-900 font-mono">
+        <div className="pt-3 border-t border-stone-100 flex items-center justify-between gap-2.5">
+          <div className="flex flex-col min-w-0 flex-1">
+            <div className="flex items-baseline gap-1.5 flex-wrap">
+              <span className="text-base sm:text-lg font-black text-stone-900 font-mono tracking-tight">
                 ₹{product.price.toLocaleString("en-IN")}
               </span>
               {product.compareAtPrice && product.compareAtPrice > product.price && (
@@ -188,7 +188,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           {/* Touch-Friendly Add CTA (>= 40px) */}
           <button
             onClick={handleAddToCart}
-            className={`min-w-[40px] min-h-[40px] h-9 sm:h-9 px-2.5 sm:px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1 transition-all shadow-xs ${
+            className={`min-w-[40px] min-h-[40px] h-9 sm:h-10 px-3 sm:px-3.5 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-xs flex-shrink-0 whitespace-nowrap active:scale-95 ${
               justAdded
                 ? "bg-emerald-600 text-white"
                 : isCustomizable
@@ -203,12 +203,12 @@ export const ProductCard: React.FC<ProductCardProps> = ({
             ) : isCustomizable ? (
               <>
                 <Sparkles className="w-3.5 h-3.5 flex-shrink-0" />
-                <span className="hidden sm:inline">Customize</span>
+                <span className="hidden min-[400px]:inline">Customize</span>
               </>
             ) : (
               <>
                 <Plus className="w-4 h-4 flex-shrink-0" />
-                <span className="hidden sm:inline">Add</span>
+                <span className="hidden min-[400px]:inline">Add</span>
               </>
             )}
           </button>

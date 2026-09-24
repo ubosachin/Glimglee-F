@@ -231,7 +231,7 @@ function ShopContent() {
         onClose={() => setQuickViewProduct(null)}
       />
 
-      <Container>
+      <Container size="full" className="max-w-[1536px] px-4 sm:px-6 lg:px-8">
         {/* Header Breadcrumb & Title */}
         <div className="mb-6 sm:mb-8 space-y-2">
           <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-rose-600 block">
@@ -308,10 +308,10 @@ function ShopContent() {
           </div>
         )}
 
-        {/* Main Layout: Desktop Sidebar Filters + Product Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+        {/* Main Layout: Desktop Sidebar Filters + Spacious Product Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
           {/* Desktop Left Sidebar Filters */}
-          <aside className="hidden lg:block lg:col-span-1 space-y-6">
+          <aside className="hidden lg:block lg:col-span-4 xl:col-span-3 space-y-6">
             <div className="bg-white rounded-3xl border border-stone-200/90 p-5 shadow-sm space-y-6 sticky top-24">
               <div className="flex items-center justify-between pb-3 border-b border-stone-100">
                 <h3 className="font-black text-sm text-stone-900 flex items-center gap-2">
@@ -427,10 +427,11 @@ function ShopContent() {
           </aside>
 
           {/* Right Product Grid Area */}
-          <main className="lg:col-span-3">
+          <main className="lg:col-span-8 xl:col-span-9">
             <ProductGrid
               products={filteredProducts.slice(0, visibleCount)}
               loading={loading}
+              columns={3}
               emptyTitle={products.length === 0 ? "No Products in Catalog Yet" : "No gifts match your filter"}
               emptyMessage={
                 products.length === 0

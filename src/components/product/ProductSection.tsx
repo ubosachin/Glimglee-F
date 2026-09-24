@@ -43,7 +43,7 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
 
   return (
     <section className={`py-6 sm:py-10 ${className}`}>
-      <Container>
+      <Container size="full" className="max-w-[1536px] px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-6 sm:mb-8 gap-3">
           <div className="space-y-1">
@@ -101,12 +101,12 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
           <div className="w-full max-w-full overflow-hidden">
             <div
               ref={scrollRef}
-              className="flex sm:grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 lg:gap-6 overflow-x-auto sm:overflow-visible pb-4 sm:pb-0 snap-x snap-mandatory scrollbar-none -mx-4 px-4 sm:mx-0 sm:px-0"
+              className="flex sm:grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-3.5 sm:gap-6 overflow-x-auto sm:overflow-visible pb-4 sm:pb-0 snap-x snap-mandatory scrollbar-none -mx-4 px-4 sm:mx-0 sm:px-0"
             >
               {products.map((product) => (
                 <div
                   key={product.id}
-                  className="flex-shrink-0 w-[180px] sm:w-auto snap-start h-full"
+                  className="flex-shrink-0 w-[220px] min-[420px]:w-[240px] sm:w-auto snap-start h-full"
                 >
                   <ProductCard product={product} onQuickView={onQuickView} />
                 </div>
@@ -114,7 +114,7 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 lg:gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-3.5 sm:gap-6">
             {products.map((product) => (
               <ProductCard key={product.id} product={product} onQuickView={onQuickView} />
             ))}

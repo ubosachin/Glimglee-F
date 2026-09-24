@@ -19,9 +19,19 @@ export const ProductCardSkeleton: React.FC = () => {
   );
 };
 
-export const ProductGridSkeleton: React.FC<{ count?: number }> = ({ count = 8 }) => {
+export const ProductGridSkeleton: React.FC<{ count?: number; columns?: 2 | 3 | 4 }> = ({
+  count = 8,
+  columns = 3,
+}) => {
+  const gridColsClass =
+    columns === 3
+      ? "grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4"
+      : columns === 2
+      ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-2"
+      : "grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4";
+
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 lg:gap-6">
+    <div className={`grid ${gridColsClass} gap-3.5 sm:gap-6 lg:gap-7`}>
       {Array.from({ length: count }).map((_, i) => (
         <ProductCardSkeleton key={i} />
       ))}
