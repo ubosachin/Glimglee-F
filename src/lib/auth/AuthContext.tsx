@@ -218,17 +218,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     saveUserSession(updated);
   };
 
-  const cleanEmail = user?.email?.toLowerCase().trim() || "";
-  const isDirectAdminEmail =
-    cleanEmail === "ubosachin@gmail.com" ||
-    cleanEmail === "admin@glimglee.com" ||
-    cleanEmail.endsWith("@glimglee.com");
-
-  const isAdmin =
-    user?.role === "ADMIN" ||
-    user?.role === "SUPER_ADMIN" ||
-    isDirectAdminEmail;
-
+  // 100% Database-Driven Role: Single Source of Truth from MongoDB
+  const isAdmin = user?.role === "ADMIN" || user?.role === "SUPER_ADMIN";
   const isManager = isAdmin || user?.role === "MANAGER";
 
   return (

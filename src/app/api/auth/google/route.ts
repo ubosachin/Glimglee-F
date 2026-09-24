@@ -49,14 +49,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Check if user is an Admin
-    const adminEmails = (process.env.ADMIN_EMAILS || "admin@glimglee.com")
-      .split(",")
-      .map((e) => e.trim().toLowerCase());
-
-    const isExplicitAdmin = adminEmails.includes(email) || email.endsWith("@glimglee.com");
-
-    let role: UserRole = isExplicitAdmin ? "SUPER_ADMIN" : "CUSTOMER";
+    let role: UserRole = "CUSTOMER";
     let existingUser = null;
 
     // Connect to MongoDB if configured
@@ -70,28 +63,23 @@ export async function POST(req: NextRequest) {
         });
 
         if (existingUser) {
-          // If existing user was already ADMIN / SUPER_ADMIN / MANAGER in MongoDB, preserve it
-          if (
-            existingUser.role === "ADMIN" ||
-            existingUser.role === "SUPER_ADMIN" ||
-            existingUser.role === "MANAGER"
-          ) {
-            role = existingUser.role;
-          } else if (isExplicitAdmin) {
-            role = "SUPER_ADMIN";
-          }
+          // DATABASE IS SINGLE SOURCE OF TRUTH:
+          // Use whatever role is assigned to this user in MongoDB Atlas
+          role = (existingUser.role as UserRole) || "CUSTOMER";
+
           await usersCol.updateOne(
             { _id: existingUser._id },
             {
               $set: {
                 displayName: payload.name || existingUser.displayName,
                 photoURL: payload.picture || existingUser.photoURL,
-                role,
                 lastLoginAt: new Date().toISOString(),
               },
             }
           );
         } else {
+          // New user defaults to CUSTOMER
+          role = "CUSTOMER";
           // Create new user in MongoDB
           await usersCol.insertOne({
             uid: payload.sub,

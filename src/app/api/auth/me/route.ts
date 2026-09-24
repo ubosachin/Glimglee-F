@@ -30,21 +30,12 @@ export async function GET(req: NextRequest) {
           uid: dbUser.uid || tokenUser.uid,
           email: dbUser.email,
           displayName: dbUser.displayName || tokenUser.displayName,
-          role: (dbUser.role as UserRole) || tokenUser.role,
+          role: (dbUser.role as UserRole) || "CUSTOMER",
           totalOrders: dbUser.totalOrders || 0,
           totalSpend: dbUser.totalSpend || 0,
           status: dbUser.status || "active",
           createdAt: dbUser.createdAt || new Date().toISOString(),
         };
-
-        // If user's email is in ADMIN_EMAILS, enforce SUPER_ADMIN
-        const adminEmails = (process.env.ADMIN_EMAILS || "admin@glimglee.com")
-          .split(",")
-          .map((e) => e.trim().toLowerCase());
-
-        if (adminEmails.includes(finalUser.email.toLowerCase())) {
-          finalUser.role = "SUPER_ADMIN";
-        }
       }
     } catch (e) {
       console.warn("Could not sync user from MongoDB in /api/auth/me:", e);
