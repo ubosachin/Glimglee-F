@@ -14,6 +14,7 @@ import { useToast } from "@/components/ui/Toast";
 import { ProductSection } from "@/components/product/ProductSection";
 import { Container } from "@/components/ui/Container";
 import { ProductPageSkeleton } from "@/components/ui/LoadingSkeletons";
+import { uploadCustomizationPhoto } from "@/lib/storage/upload";
 import {
   Star,
   Heart,
@@ -31,6 +32,7 @@ import {
   Clock,
   RotateCcw,
   X,
+  Loader2,
 } from "lucide-react";
 
 export default function ProductDetailPage() {
@@ -56,6 +58,7 @@ export default function ProductDetailPage() {
   const [giftWrap, setGiftWrap] = useState(false);
   const [personalizationValues, setPersonalizationValues] = useState<Record<string, string>>({});
   const [uploadedPhotoPreview, setUploadedPhotoPreview] = useState<string | null>(null);
+  const [uploadingCustomPhoto, setUploadingCustomPhoto] = useState(false);
 
   // Delivery estimation pincode
   const [pincode, setPincode] = useState("");
@@ -128,27 +131,46 @@ export default function ProductDetailPage() {
 
   const isCustomizable = product.isCustomizable || personalizationFields.length > 0;
 
-  // Handle Photo upload simulation (converts to base64 data URL for preview & order payload)
-  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>, fieldName: string) => {
+  // Handle Custom Photo upload directly to Cloudinary CDN
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>, fieldName: string) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast("Please select a valid image file", "error");
+      return;
+    }
 
     if (file.size > 10 * 1024 * 1024) {
       toast("Image must be under 10MB", "error");
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      const dataUrl = reader.result as string;
-      setUploadedPhotoPreview(dataUrl);
+    setUploadingCustomPhoto(true);
+    try {
+      const res = await uploadCustomizationPhoto(file, user?.uid || "guest");
+      setUploadedPhotoPreview(res.url);
       setPersonalizationValues((prev) => ({
         ...prev,
-        [fieldName]: dataUrl,
+        [fieldName]: res.url,
       }));
-      toast("Photograph uploaded successfully!", "success");
-    };
-    reader.readAsDataURL(file);
+      toast("Custom photo uploaded to Cloudinary successfully!", "success");
+    } catch (err: any) {
+      console.warn("Cloudinary upload failed, falling back to local preview:", err);
+      const reader = new FileReader();
+      reader.onload = () => {
+        const dataUrl = reader.result as string;
+        setUploadedPhotoPreview(dataUrl);
+        setPersonalizationValues((prev) => ({
+          ...prev,
+          [fieldName]: dataUrl,
+        }));
+        toast("Photograph uploaded successfully!", "success");
+      };
+      reader.readAsDataURL(file);
+    } finally {
+      setUploadingCustomPhoto(false);
+    }
   };
 
   const handlePincodeCheck = (e: React.FormEvent) => {
@@ -447,14 +469,27 @@ export default function ProductDetailPage() {
                           ) : field.type === "image" ? (
                             <div className="space-y-2">
                               <label className="flex flex-col items-center justify-center p-4 border-2 border-dashed border-rose-300 hover:border-rose-500 rounded-2xl bg-white cursor-pointer transition-colors group">
-                                <Upload className="w-6 h-6 text-rose-500 group-hover:scale-110 transition-transform mb-1" />
-                                <span className="text-xs font-bold text-stone-800">
-                                  {uploadedPhotoPreview ? "Change Photo" : "Upload High-Resolution Photo"}
-                                </span>
-                                <span className="text-[10px] text-stone-400">JPG, PNG up to 10MB</span>
+                                {uploadingCustomPhoto ? (
+                                  <>
+                                    <Loader2 className="w-6 h-6 text-rose-500 animate-spin mb-1" />
+                                    <span className="text-xs font-bold text-stone-800">
+                                      Uploading to Cloudinary...
+                                    </span>
+                                    <span className="text-[10px] text-stone-400">Optimizing photo on CDN</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <Upload className="w-6 h-6 text-rose-500 group-hover:scale-110 transition-transform mb-1" />
+                                    <span className="text-xs font-bold text-stone-800">
+                                      {uploadedPhotoPreview ? "Change Photo" : "Upload High-Resolution Photo"}
+                                    </span>
+                                    <span className="text-[10px] text-stone-400">JPG, PNG up to 10MB</span>
+                                  </>
+                                )}
                                 <input
                                   type="file"
                                   accept="image/*"
+                                  disabled={uploadingCustomPhoto}
                                   onChange={(e) => handlePhotoUpload(e, fieldKey)}
                                   className="hidden"
                                 />

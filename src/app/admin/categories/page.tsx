@@ -5,6 +5,7 @@ import Image from "next/image";
 import { getCategories, saveCategory, deleteCategory } from "@/lib/services/storeDb";
 import { Category } from "@/lib/types";
 import { useToast } from "@/components/ui/Toast";
+import ImageUpload from "@/components/ui/ImageUpload";
 import { Plus, Edit, Trash2, Layers, X, Check } from "lucide-react";
 
 export default function AdminCategoriesPage() {
@@ -189,13 +190,13 @@ export default function AdminCategoriesPage() {
               </div>
 
               <div>
-                <label className="block font-bold text-stone-700 mb-1">Image URL</label>
-                <input
-                  type="text"
-                  placeholder="https://... (or leave empty)"
-                  value={editingCategory.image}
-                  onChange={(e) => setEditingCategory({ ...editingCategory, image: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl border border-stone-200 outline-none focus:ring-1 focus:ring-rose-500"
+                <ImageUpload
+                  label="Category Cover Photo"
+                  hint="Upload a square high-resolution banner photo for this category"
+                  value={editingCategory.image || ""}
+                  onChange={(url) => setEditingCategory({ ...editingCategory, image: url as string })}
+                  folder="glimglee/categories"
+                  aspectRatio="square"
                 />
               </div>
 

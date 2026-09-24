@@ -4,10 +4,10 @@ import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { getProducts, getCategories, saveProduct, deleteProduct, logAdminAction } from "@/lib/services/storeDb";
-import { uploadProductImage } from "@/lib/storage/upload";
 import { Product, Category, PersonalizationField } from "@/lib/types";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { useToast } from "@/components/ui/Toast";
+import ImageUpload from "@/components/ui/ImageUpload";
 import {
   Plus,
   Search,
@@ -433,51 +433,20 @@ export default function AdminProductsPage() {
                   />
                 </div>
 
-                <div className="sm:col-span-2 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <label className="block font-bold text-stone-700">Product Photography (Cloudinary CDN)</label>
-                    {uploadingImage && <span className="text-[11px] text-rose-600 font-bold animate-pulse">Uploading to Cloudinary...</span>}
-                  </div>
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      placeholder="Paste image URL or click upload to store in Cloudinary..."
-                      value={editingProduct.images[0] || ""}
-                      onChange={(e) =>
-                        setEditingProduct({
-                          ...editingProduct,
-                          images: [e.target.value, ...editingProduct.images.slice(1)],
-                        })
-                      }
-                      className="flex-1 px-3 py-2 rounded-xl border border-stone-200 outline-none focus:ring-1 focus:ring-rose-500 text-xs"
-                    />
-                    <label className="px-4 py-2 bg-stone-100 hover:bg-stone-200 text-stone-800 font-bold rounded-xl cursor-pointer text-xs flex items-center gap-1.5 transition-colors">
-                      <span>Upload File</span>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={async (e) => {
-                          const file = e.target.files?.[0];
-                          if (!file) return;
-                          try {
-                            setUploadingImage(true);
-                            const res = await uploadProductImage(file, editingProduct.id);
-                            setEditingProduct((prev) =>
-                              prev ? { ...prev, images: [res.url, ...prev.images.filter((img) => img !== res.url)] } : null
-                            );
-                            toast("Image uploaded to Cloudinary Storage!", "success");
-                          } catch (err: unknown) {
-                            console.error("Storage upload error:", err);
-                            const msg = err instanceof Error ? err.message : "Storage upload failed. Check Cloudinary credentials.";
-                            toast(msg, "error");
-                          } finally {
-                            setUploadingImage(false);
-                          }
-                        }}
-                      />
-                    </label>
-                  </div>
+                <div className="sm:col-span-2">
+                  <ImageUpload
+                    label="Product Photography (Cloudinary CDN)"
+                    value={editingProduct.images}
+                    multiple={true}
+                    maxFiles={6}
+                    folder={`glimglee/products/${editingProduct.id || "catalog"}`}
+                    onChange={(urls) =>
+                      setEditingProduct({
+                        ...editingProduct,
+                        images: urls,
+                      })
+                    }
+                  />
                 </div>
 
                 <div className="sm:col-span-2">

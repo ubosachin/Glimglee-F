@@ -6,6 +6,7 @@ import { getBanners, saveBanner, deleteBanner, logAdminAction } from "@/lib/serv
 import { Banner } from "@/lib/types";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { useToast } from "@/components/ui/Toast";
+import ImageUpload from "@/components/ui/ImageUpload";
 import { Plus, Image as ImageIcon, Trash2, Edit, X } from "lucide-react";
 
 export default function AdminBannersPage() {
@@ -184,13 +185,12 @@ export default function AdminBannersPage() {
               </div>
 
               <div>
-                <label className="block font-bold text-stone-700 mb-1">Image URL *</label>
-                <input
-                  type="text"
-                  required
+                <ImageUpload
+                  label="Banner Image (Cloudinary CDN)"
                   value={editingBanner.imageUrl}
-                  onChange={(e) => setEditingBanner({ ...editingBanner, imageUrl: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl border border-stone-200 outline-none focus:ring-1 focus:ring-rose-500"
+                  folder="glimglee/banners"
+                  aspectRatio="banner"
+                  onChange={(url) => setEditingBanner({ ...editingBanner, imageUrl: url })}
                 />
               </div>
 

@@ -5,6 +5,7 @@ import { getCMSContent, updateCMSContent, logAdminAction } from "@/lib/services/
 import { HomepageCMS } from "@/lib/types";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { useToast } from "@/components/ui/Toast";
+import ImageUpload from "@/components/ui/ImageUpload";
 import { FileText, Save, Sparkles, Check } from "lucide-react";
 
 export default function AdminCMSPage() {
@@ -115,12 +116,13 @@ export default function AdminCMSPage() {
             </div>
 
             <div className="sm:col-span-2">
-              <label className="block font-bold text-stone-700 mb-1">Hero Image URL</label>
-              <input
-                type="text"
-                value={cms.heroImage}
-                onChange={(e) => setCms({ ...cms, heroImage: e.target.value })}
-                className="w-full px-3 py-2 rounded-xl border border-stone-200 outline-none"
+              <ImageUpload
+                label="Storefront Hero Banner Photo"
+                hint="Upload high-impact 16:9 or panoramic banner photography for the storefront homepage"
+                value={cms.heroImage || ""}
+                onChange={(url) => setCms({ ...cms, heroImage: url as string })}
+                folder="glimglee/cms"
+                aspectRatio="banner"
               />
             </div>
           </div>
