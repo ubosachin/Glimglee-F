@@ -249,11 +249,11 @@ export default function ProductDetailPage() {
         </nav>
 
         {/* Main Product Showcase Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
           {/* Left Column: Image Gallery & Accordions */}
-          <div className="lg:col-span-7 space-y-6 sm:space-y-8">
+          <div className="lg:col-span-5 space-y-5 sm:space-y-6">
             {/* Main Selected Image */}
-            <div className="relative aspect-[4/5] sm:aspect-square w-full rounded-3xl overflow-hidden bg-stone-100 border border-stone-200/90 shadow-sm flex items-center justify-center">
+            <div className="relative aspect-square w-full max-w-[340px] sm:max-w-[400px] lg:max-w-none mx-auto rounded-2xl sm:rounded-3xl overflow-hidden bg-stone-100 border border-stone-200/90 shadow-sm flex items-center justify-center">
               {images.length > 0 ? (
                 <Image
                   src={images[selectedImg] || images[0]}
@@ -269,7 +269,7 @@ export default function ProductDetailPage() {
                 </div>
               )}
               {discountPercent > 0 && (
-                <span className="absolute top-4 left-4 px-3 py-1 rounded-full bg-emerald-700 text-white text-xs font-black shadow-md">
+                <span className="absolute top-3.5 left-3.5 px-2.5 py-0.5 rounded-full bg-emerald-700 text-white text-[10px] font-black shadow-md">
                   {discountPercent}% OFF
                 </span>
               )}
@@ -278,25 +278,25 @@ export default function ProductDetailPage() {
                   e.preventDefault();
                   toggleWishlist(product);
                 }}
-                className={`absolute top-4 right-4 min-w-[44px] min-h-[44px] w-11 h-11 rounded-full flex items-center justify-center transition-all duration-200 shadow-md ${
+                className={`absolute top-3.5 right-3.5 min-w-[40px] min-h-[40px] w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200 shadow-md ${
                   isFavorited
                     ? "bg-rose-50 text-rose-600 ring-2 ring-rose-200"
                     : "bg-white/90 text-stone-600 hover:text-rose-600 hover:bg-white"
                 }`}
                 aria-label="Wishlist"
               >
-                <Heart className={`w-5 h-5 ${isFavorited ? "fill-rose-600 text-rose-600" : ""}`} />
+                <Heart className={`w-4 h-4 sm:w-5 sm:h-5 ${isFavorited ? "fill-rose-600 text-rose-600" : ""}`} />
               </button>
             </div>
 
             {/* Thumbnails Row */}
             {images.length > 1 && (
-              <div className="flex gap-2.5 sm:gap-3 overflow-x-auto pb-2 scrollbar-none">
+              <div className="flex gap-2 sm:gap-2.5 overflow-x-auto pb-1.5 scrollbar-none justify-center lg:justify-start">
                 {images.map((img, idx) => (
                   <button
                     key={idx}
                     onClick={() => setSelectedImg(idx)}
-                    className={`relative w-18 h-18 sm:w-20 sm:h-20 rounded-2xl overflow-hidden flex-shrink-0 border-2 transition-all ${
+                    className={`relative w-14 h-14 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl overflow-hidden flex-shrink-0 border-2 transition-all ${
                       selectedImg === idx
                         ? "border-rose-600 scale-105 shadow-md"
                         : "border-stone-200 hover:border-stone-300 opacity-80"
@@ -362,7 +362,7 @@ export default function ProductDetailPage() {
           </div>
 
           {/* Right Column: Pricing, Personalization Studio, Actions */}
-          <div className="lg:col-span-5 space-y-6">
+          <div className="lg:col-span-7 space-y-6">
             <div>
               {/* Badges */}
               <div className="flex flex-wrap items-center gap-2 mb-2.5">

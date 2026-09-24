@@ -48,17 +48,17 @@ export const ProductPageSkeleton: React.FC = () => {
     <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 animate-pulse">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
         {/* Gallery skeleton */}
-        <div className="lg:col-span-7 space-y-4">
-          <div className="w-full aspect-[4/4] sm:aspect-[4/3] rounded-3xl bg-stone-200" />
-          <div className="flex gap-3">
+        <div className="lg:col-span-5 space-y-4">
+          <div className="w-full max-w-[340px] sm:max-w-[400px] lg:max-w-none mx-auto aspect-square rounded-2xl sm:rounded-3xl bg-stone-200" />
+          <div className="flex gap-2 sm:gap-2.5 justify-center lg:justify-start">
             {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="w-20 h-20 rounded-2xl bg-stone-200" />
+              <div key={i} className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl bg-stone-200" />
             ))}
           </div>
         </div>
 
         {/* Details skeleton */}
-        <div className="lg:col-span-5 space-y-6">
+        <div className="lg:col-span-7 space-y-6">
           <div className="h-4 w-24 bg-stone-200 rounded-full" />
           <div className="h-8 w-4/5 bg-stone-200 rounded-lg" />
           <div className="h-6 w-32 bg-stone-200 rounded-lg" />
