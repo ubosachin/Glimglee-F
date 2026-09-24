@@ -1,26 +1,82 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #faf8f5;
+    --card: #ffffff;
+    --card-foreground: #1c1917;
+    --popover: #ffffff;
+    --popover-foreground: #1c1917;
+    --primary: #e11d48;
+    --primary-foreground: #ffffff;
+    --secondary: #fff1f2;
+    --secondary-foreground: #9f1239;
+    --muted: #f5f3ef;
+    --muted-foreground: #78716c;
+    --accent: #fef3c7;
+    --accent-foreground: #92400e;
+    --destructive: #ef4444;
+    --destructive-foreground: #ffffff;
+    --border: #ede8e1;
+    --input: #ede8e1;
+    --ring: #e11d48;
+    --radius: 1rem;
+  }
+
+  * {
+    border-color: var(--border);
+  }
+
+  body {
+    background-color: var(--background);
+    color: #1c1917;
+    font-feature-settings: "rlig" 1, "calt" 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Custom Gifting Theme Utility Classes */
+.bg-cream {
+  background-color: #faf8f5;
+}
+
+.bg-blush-50 {
+  background-color: #fff1f2;
+}
+
+.text-charcoal {
+  color: #1c1917;
+}
+
+.text-rose-brand {
+  color: #e11d48;
+}
+
+.border-warm {
+  border-color: #ede8e1;
+}
+
+.shadow-gift {
+  box-shadow: 0 4px 20px -2px rgba(225, 29, 72, 0.06), 0 2px 6px -1px rgba(0, 0, 0, 0.04);
+}
+
+.shadow-card-hover {
+  box-shadow: 0 12px 30px -4px rgba(225, 29, 72, 0.12), 0 4px 10px -2px rgba(0, 0, 0, 0.06);
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #faf8f5;
+}
+::-webkit-scrollbar-thumb {
+  background: #d6d3d1;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #a8a29e;
 }
