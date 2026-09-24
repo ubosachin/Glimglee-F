@@ -121,8 +121,8 @@ export default function AdminLayout({
     );
   }
 
-  // 3. Authenticated BUT Not an Admin or Manager (e.g. role === "CUSTOMER") -> 403 Forbidden
-  if (!isAdmin && !isManager) {
+  // 3. Authenticated BUT Not an Admin (role === "CUSTOMER") -> 403 Forbidden
+  if (!isAdmin) {
     return (
       <div className="min-h-screen bg-[#1c1917] flex flex-col items-center justify-center p-6 text-stone-200">
         <div className="max-w-md w-full bg-stone-900 border border-stone-800 rounded-3xl p-8 shadow-2xl text-center space-y-5">
@@ -133,7 +133,7 @@ export default function AdminLayout({
             <span className="text-[10px] font-bold uppercase tracking-widest text-rose-500 block mb-1">403 Access Denied</span>
             <h2 className="text-xl font-black text-white">Administrative Access Restricted</h2>
             <p className="text-xs text-stone-400 mt-2">
-              You are currently signed in as <strong className="text-white">{user.email}</strong> ({user.role}), which does not have permission to view the Glimglee Enterprise Admin Suite.
+              You are currently signed in as <strong className="text-white">{user.email}</strong> ({user.role}), which does not have ADMIN permission to view the Glimglee Enterprise Admin Suite.
             </p>
           </div>
           <div className="pt-2 flex flex-col gap-2.5">
@@ -156,14 +156,7 @@ export default function AdminLayout({
     );
   }
 
-  const isSuperAdminOrAdmin = user?.role === "SUPER_ADMIN" || user?.role === "ADMIN";
-  const filteredNavItems = navItems.filter((group) => {
-    // Only Super Admin and Admin can access sensitive system settings & audit logs
-    if (group.group === "Settings" && !isSuperAdminOrAdmin) {
-      return false;
-    }
-    return true;
-  });
+  const filteredNavItems = navItems;
 
   return (
     <div className="min-h-screen bg-[#f8f7f4] flex flex-col lg:flex-row font-sans">

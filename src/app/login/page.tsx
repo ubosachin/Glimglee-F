@@ -18,7 +18,7 @@ export default function LoginPage() {
     toast("Welcome back!", "success");
     const stored = typeof window !== "undefined" ? localStorage.getItem("glimglee_auth_user") : null;
     const parsed = stored ? JSON.parse(stored) : null;
-    if (parsed?.role === "ADMIN" || parsed?.role === "SUPER_ADMIN" || parsed?.role === "MANAGER") {
+    if (parsed?.role === "ADMIN" || parsed?.role === "SUPER_ADMIN") {
       router.push("/admin/dashboard");
     } else {
       router.push("/account");
@@ -92,9 +92,9 @@ export default function LoginPage() {
                     <p className="text-sm font-semibold text-stone-900 truncate">
                       {user.displayName || "Member"}
                     </p>
-                    {(isAdmin || isManager) && (
+                    {isAdmin && (
                       <span className="px-2 py-0.5 rounded-md bg-rose-100 text-rose-700 text-[10px] font-bold uppercase tracking-wider">
-                        {user.role}
+                        ADMIN
                       </span>
                     )}
                   </div>
@@ -111,7 +111,7 @@ export default function LoginPage() {
                   <span>Go to My Account</span>
                 </Link>
 
-                {(isAdmin || isManager) && (
+                {isAdmin && (
                   <Link
                     href="/admin/dashboard"
                     className="w-full h-11 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold flex items-center justify-center gap-2 transition-colors"

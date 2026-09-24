@@ -64,8 +64,9 @@ export async function POST(req: NextRequest) {
 
         if (existingUser) {
           // DATABASE IS SINGLE SOURCE OF TRUTH:
-          // Use whatever role is assigned to this user in MongoDB Atlas
-          role = (existingUser.role as UserRole) || "CUSTOMER";
+          // Use whatever role is assigned to this user in MongoDB Atlas (ADMIN or CUSTOMER)
+          const rawRole = String(existingUser.role || "").toUpperCase().trim();
+          role = rawRole === "ADMIN" || rawRole === "SUPER_ADMIN" ? "ADMIN" : "CUSTOMER";
 
           await usersCol.updateOne(
             { _id: existingUser._id },

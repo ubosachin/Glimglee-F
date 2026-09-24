@@ -135,7 +135,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         uid: `usr_${Date.now()}`,
         email: demoEmail,
         displayName: "Sachin (Admin)",
-        role: "SUPER_ADMIN",
+        role: "ADMIN",
         totalOrders: 0,
         totalSpend: 0,
         status: "active",
@@ -161,7 +161,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .map((e) => e.trim().toLowerCase());
 
       const isAdminEmail = adminEmails.includes(cleanEmail) || cleanEmail.includes("admin");
-      const role: UserRole = isAdminEmail ? "SUPER_ADMIN" : "CUSTOMER";
+      const role: UserRole = isAdminEmail ? "ADMIN" : "CUSTOMER";
 
       const profile: UserProfile = {
         uid: `usr_${Date.now()}`,
@@ -218,9 +218,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     saveUserSession(updated);
   };
 
-  // 100% Database-Driven Role: Single Source of Truth from MongoDB
-  const isAdmin = user?.role === "ADMIN" || user?.role === "SUPER_ADMIN";
-  const isManager = isAdmin || user?.role === "MANAGER";
+  // 100% Database-Driven Role: Single Source of Truth from MongoDB (ADMIN or CUSTOMER)
+  const isAdmin = user?.role === "ADMIN" || (user?.role as any) === "SUPER_ADMIN";
+  const isManager = isAdmin;
 
   return (
     <AuthContext.Provider

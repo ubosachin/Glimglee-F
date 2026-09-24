@@ -156,7 +156,7 @@ export const Navbar: React.FC = () => {
               Help & Support
             </Link>
 
-            {(isAdmin || isManager) && (
+            {isAdmin && (
               <>
                 <span className="text-stone-700">•</span>
                 <Link
@@ -379,8 +379,8 @@ export const Navbar: React.FC = () => {
                 )}
               </button>
 
-              {/* Exclusive Admin Suite Button - ONLY VISIBLE TO LOGGED IN USERS WITH ADMIN / MANAGER ROLE */}
-              {(isAdmin || isManager) && (
+              {/* Exclusive Admin Suite Button - ONLY VISIBLE TO LOGGED IN USERS WITH ADMIN ROLE */}
+              {isAdmin && (
                 <Link
                   href="/admin/dashboard"
                   className="inline-flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3.5 sm:py-2 rounded-full bg-rose-600 hover:bg-rose-700 text-white text-[11px] sm:text-xs font-bold shadow-xs hover:shadow transition-all flex-shrink-0"
@@ -455,7 +455,7 @@ export const Navbar: React.FC = () => {
                         <span>Saved Addresses</span>
                       </Link>
 
-                      {(isAdmin || isManager) && (
+                      {isAdmin && (
                         <Link
                           href="/admin/dashboard"
                           onClick={() => setAccountMenuOpen(false)}
@@ -779,7 +779,7 @@ export const Navbar: React.FC = () => {
                 </Link>
 
                 {/* Role-Guarded Admin Operations Link */}
-                {(isAdmin || isManager) && (
+                {isAdmin && (
                   <Link
                     href="/admin/dashboard"
                     onClick={() => setMobileMenuOpen(false)}

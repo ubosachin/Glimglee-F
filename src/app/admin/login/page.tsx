@@ -22,16 +22,16 @@ export default function AdminLoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const alreadyAdmin = isAdmin || isManager;
+  const alreadyAdmin = isAdmin;
 
   const handleGoogleSuccess = () => {
     // Check if the newly signed in user is an admin
     const stored = typeof window !== "undefined" ? localStorage.getItem("glimglee_auth_user") : null;
     const parsed = stored ? JSON.parse(stored) : null;
-    if (parsed?.role === "ADMIN" || parsed?.role === "SUPER_ADMIN" || parsed?.role === "MANAGER") {
+    if (parsed?.role === "ADMIN" || parsed?.role === "SUPER_ADMIN") {
       router.push("/admin/dashboard");
     } else {
-      setError(`Access Denied: Account (${parsed?.email || "user"}) does not have admin permissions. Add this email to ADMIN_EMAILS in .env.local.`);
+      setError(`Access Denied: Account (${parsed?.email || "user"}) does not have ADMIN role in database.`);
     }
   };
 

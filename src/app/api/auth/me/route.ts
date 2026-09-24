@@ -26,11 +26,14 @@ export async function GET(req: NextRequest) {
       });
 
       if (dbUser) {
+        const rawRole = String(dbUser.role || "").toUpperCase().trim();
+        const role: UserRole = rawRole === "ADMIN" || rawRole === "SUPER_ADMIN" ? "ADMIN" : "CUSTOMER";
+
         finalUser = {
           uid: dbUser.uid || tokenUser.uid,
           email: dbUser.email,
           displayName: dbUser.displayName || tokenUser.displayName,
-          role: (dbUser.role as UserRole) || "CUSTOMER",
+          role,
           totalOrders: dbUser.totalOrders || 0,
           totalSpend: dbUser.totalSpend || 0,
           status: dbUser.status || "active",

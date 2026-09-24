@@ -18,7 +18,7 @@ export default function AdminSettingsPage() {
     getStoreSettings().then(setSettings);
   }, []);
 
-  const isAuthorized = user?.role === "SUPER_ADMIN" || user?.role === "ADMIN";
+  const isAuthorized = user?.role === "ADMIN" || (user?.role as any) === "SUPER_ADMIN";
 
   if (user && !isAuthorized) {
     return (

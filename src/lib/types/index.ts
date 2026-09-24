@@ -189,7 +189,7 @@ export interface Review {
   createdAt: string;
 }
 
-export type UserRole = "CUSTOMER" | "MANAGER" | "ADMIN" | "SUPER_ADMIN";
+export type UserRole = "CUSTOMER" | "ADMIN";
 
 export interface UserProfile {
   uid: string;

@@ -14,7 +14,7 @@ export default function AdminAuditLogsPage() {
     getAuditLogs().then(setLogs);
   }, []);
 
-  const isAuthorized = user?.role === "SUPER_ADMIN" || user?.role === "ADMIN";
+  const isAuthorized = user?.role === "ADMIN" || (user?.role as any) === "SUPER_ADMIN";
 
   if (user && !isAuthorized) {
     return (
