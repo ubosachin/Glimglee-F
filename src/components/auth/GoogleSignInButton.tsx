@@ -92,6 +92,9 @@ export default function GoogleSignInButton({
       // Clear any previous rendered button
       buttonRef.current.innerHTML = "";
 
+      const containerWidth = buttonRef.current?.parentElement?.clientWidth || 320;
+      const targetWidth = Math.min(width || 340, Math.max(220, containerWidth));
+
       window.google?.accounts.id.renderButton(buttonRef.current, {
         type: "standard",
         theme,
@@ -99,7 +102,7 @@ export default function GoogleSignInButton({
         text,
         shape: "rectangular",
         logo_alignment: "left",
-        width,
+        width: targetWidth,
       });
     } catch (err) {
       console.error("Error initializing Google Identity Services:", err);
@@ -123,13 +126,13 @@ export default function GoogleSignInButton({
   // If Client ID is configured, show official GSI rendered button
   if (clientId && clientId !== "your-google-client-id.apps.googleusercontent.com") {
     return (
-      <div className={`relative flex flex-col items-center w-full ${className}`}>
+      <div className={`relative flex flex-col items-center w-full max-w-full overflow-hidden ${className}`}>
         {loading && (
-          <div className="absolute inset-0 bg-white/80 backdrop-blur-xs rounded-2xl flex items-center justify-center z-10">
+          <div className="absolute inset-0 bg-white/80 backdrop-blur-xs rounded-xl flex items-center justify-center z-10">
             <Loader2 className="w-5 h-5 text-rose-500 animate-spin" />
           </div>
         )}
-        <div ref={buttonRef} className="flex justify-center w-full min-h-[44px]" />
+        <div ref={buttonRef} className="flex justify-center w-full max-w-full overflow-hidden min-h-[44px]" />
       </div>
     );
   }
@@ -140,10 +143,10 @@ export default function GoogleSignInButton({
       type="button"
       onClick={handleManualClick}
       disabled={loading}
-      className={`w-full h-12 sm:h-13 px-5 rounded-2xl border border-stone-200/90 bg-white hover:bg-stone-50 active:bg-stone-100 text-stone-800 text-sm font-semibold flex items-center justify-center gap-3.5 shadow-xs hover:shadow-md hover:border-rose-300/80 transition-all duration-200 transform hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 cursor-pointer ${className}`}
+      className={`w-full h-12 px-4 rounded-xl border border-stone-300 hover:border-stone-400 bg-white hover:bg-stone-50 active:bg-stone-100 text-stone-800 text-sm font-medium flex items-center justify-center gap-3 shadow-xs transition-all active:scale-[0.99] disabled:opacity-50 cursor-pointer ${className}`}
     >
       {loading ? (
-        <Loader2 className="w-5 h-5 animate-spin text-rose-500" />
+        <Loader2 className="w-4 h-4 animate-spin text-stone-500" />
       ) : (
         <svg className="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24">
           <path
@@ -164,7 +167,7 @@ export default function GoogleSignInButton({
           />
         </svg>
       )}
-      <span className="tracking-wide">Continue with Google</span>
+      <span className="font-semibold text-stone-700">Continue with Google</span>
     </button>
   );
 }
