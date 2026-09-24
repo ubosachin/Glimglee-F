@@ -72,6 +72,12 @@ export default function HomePage() {
       }
     }
     loadData();
+
+    const handleCatUpdate = () => {
+      getCategories().then(setCategories);
+    };
+    window.addEventListener("glimglee_categories_updated", handleCatUpdate);
+    return () => window.removeEventListener("glimglee_categories_updated", handleCatUpdate);
   }, []);
 
   // Filter dynamic product categories

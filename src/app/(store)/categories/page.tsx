@@ -9,9 +9,23 @@ import { ArrowRight, Sparkles } from "lucide-react";
 
 export default function CategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchCats = async () => {
+    try {
+      const data = await getCategories();
+      setCategories(data);
+    } catch (e) {
+      console.error("Failed to load categories:", e);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    getCategories().then(setCategories);
+    fetchCats();
+    window.addEventListener("glimglee_categories_updated", fetchCats);
+    return () => window.removeEventListener("glimglee_categories_updated", fetchCats);
   }, []);
 
   return (
@@ -28,7 +42,15 @@ export default function CategoriesPage() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+      {loading && (
+        <div className="py-20 flex flex-col items-center justify-center space-y-3">
+          <div className="w-8 h-8 border-2 border-rose-600 border-t-transparent rounded-full animate-spin" />
+          <p className="text-xs text-stone-500 font-medium">Loading gift collections...</p>
+        </div>
+      )}
+
+      {!loading && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
         {categories.map((cat) => (
           <Link
             key={cat.id}
@@ -70,7 +92,8 @@ export default function CategoriesPage() {
             </div>
           </Link>
         ))}
-      </div>
+        </div>
+      )}
     </div>
   );
 }

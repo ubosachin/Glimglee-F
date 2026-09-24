@@ -11,11 +11,25 @@ import { Plus, Edit, Trash2, Layers, X, Check } from "lucide-react";
 export default function AdminCategoriesPage() {
   const { toast } = useToast();
   const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
 
+  const fetchCats = async () => {
+    try {
+      const data = await getCategories(true);
+      setCategories(data);
+    } catch (e) {
+      console.error("Failed to load admin categories:", e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    getCategories().then(setCategories);
+    fetchCats();
+    window.addEventListener("glimglee_categories_updated", fetchCats);
+    return () => window.removeEventListener("glimglee_categories_updated", fetchCats);
   }, []);
 
   const handleOpenCreate = () => {
@@ -46,15 +60,7 @@ export default function AdminCategoriesPage() {
     const toSave: Category = { ...editingCategory, slug };
 
     await saveCategory(toSave);
-    setCategories((prev) => {
-      const idx = prev.findIndex((c) => c.id === toSave.id);
-      if (idx >= 0) {
-        const u = [...prev];
-        u[idx] = toSave;
-        return u;
-      }
-      return [...prev, toSave];
-    });
+    await fetchCats();
 
     setModalOpen(false);
     toast(`Category "${toSave.name}" saved!`, "success");
@@ -63,7 +69,7 @@ export default function AdminCategoriesPage() {
   const handleDelete = async (id: string, name: string) => {
     if (!confirm(`Delete category "${name}"?`)) return;
     await deleteCategory(id);
-    setCategories((prev) => prev.filter((c) => c.id !== id));
+    await fetchCats();
     toast(`Category deleted`, "info");
   };
 
@@ -148,7 +154,14 @@ export default function AdminCategoriesPage() {
           </div>
         ))}
 
-        {categories.length === 0 && (
+        {loading && (
+          <div className="col-span-full py-16 flex flex-col items-center justify-center space-y-3">
+            <div className="w-8 h-8 border-2 border-rose-600 border-t-transparent rounded-full animate-spin" />
+            <p className="text-xs text-stone-500 font-medium">Loading catalog categories...</p>
+          </div>
+        )}
+
+        {!loading && categories.length === 0 && (
           <div className="col-span-full p-12 text-center bg-white rounded-3xl border border-stone-200 shadow-sm space-y-3">
             <Layers className="w-10 h-10 mx-auto text-stone-300" />
             <h3 className="text-sm font-bold text-stone-800">No Categories Created Yet</h3>

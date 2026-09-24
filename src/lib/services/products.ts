@@ -64,6 +64,7 @@ export async function getProducts(options?: ProductFilterOptions): Promise<Produ
   // Check in-memory cache first
   if (productsCache && now - productsCache.timestamp < CACHE_TTL_MS) {
     list = productsCache.data;
+  } else {
     // Check local storage for instant zero-latency start
     if (typeof window !== "undefined") {
       const local = getLocalProducts();
@@ -82,7 +83,9 @@ export async function getProducts(options?: ProductFilterOptions): Promise<Produ
             .find({})
             .sort({ createdAt: -1 })
             .toArray();
-          list = docs;
+          if (docs && docs.length > 0) {
+            list = docs;
+          }
         }
       } catch (err) {
         console.warn("Server direct MongoDB getProducts error:", err);
@@ -90,7 +93,7 @@ export async function getProducts(options?: ProductFilterOptions): Promise<Produ
     } else {
       // In the browser, fetch from the /api/products route with Edge caching
       try {
-        const res = await fetch("/api/products");
+        const res = await fetch("/api/products", { cache: "no-store" });
         if (res.ok) {
           const data = await res.json();
           if (Array.isArray(data.products) && data.products.length > 0) {

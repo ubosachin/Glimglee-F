@@ -61,6 +61,9 @@ export const Navbar: React.FC = () => {
   // Load dynamic categories
   useEffect(() => {
     getCategories().then(setCategories);
+    const handleUpdate = () => getCategories().then(setCategories);
+    window.addEventListener("glimglee_categories_updated", handleUpdate);
+    return () => window.removeEventListener("glimglee_categories_updated", handleUpdate);
   }, []);
 
   // Scroll detection for sticky shadow & subtle compression
