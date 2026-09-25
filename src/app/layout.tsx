@@ -6,6 +6,7 @@ import { CartProvider } from "@/lib/cart/CartContext";
 import { WishlistProvider } from "@/lib/wishlist/WishlistContext";
 import { ToastProvider } from "@/components/ui/Toast";
 import { StorageAutoPurger } from "@/components/ui/StorageAutoPurger";
+import { SITE_URL } from "@/lib/config/site";
 
 const fontSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -19,21 +20,38 @@ export const viewport: Viewport = {
   maximumScale: 5,
 };
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://glimglee.com";
+const siteUrl = SITE_URL;
 
 const organizationSchema = {
   "@context": "https://schema.org",
   "@type": "OnlineStore",
   "@id": `${siteUrl}/#organization`,
   name: "Glimglee",
+  legalName: "Glimglee Technologies Pvt. Ltd.",
+  alternateName: [
+    "Glimglee",
+    "Glimglee Gifting",
+    "Glimglee Store",
+    "Glimglee Official Store",
+    "Glimglee India",
+    "www.glimglee.com",
+    "glimglee.com",
+  ],
   url: siteUrl,
   logo: `${siteUrl}/apple-icon.png`,
-  description: "India's premier personalized luxury gifting brand. Handcrafted hampers, scented soy candles, floating glass frames, and artisan greeting cards.",
+  image: `${siteUrl}/opengraph-image`,
+  description: "Official Glimglee Store. India's premier personalized luxury gifting brand. Handcrafted hampers, scented soy candles, floating glass frames, and artisan greeting cards.",
   email: "care@glimglee.com",
   telephone: "+918000045464",
   priceRange: "₹₹",
   currenciesAccepted: "INR",
   paymentAccepted: "Credit Card, Debit Card, UPI, Net Banking, Cash on Delivery",
+  brand: {
+    "@type": "Brand",
+    name: "Glimglee",
+    logo: `${siteUrl}/apple-icon.png`,
+    slogan: "Modern Gifting, Made Personal",
+  },
   address: {
     "@type": "PostalAddress",
     addressCountry: "IN",
@@ -41,6 +59,8 @@ const organizationSchema = {
   sameAs: [
     "https://instagram.com/glimglee",
     "https://facebook.com/glimglee",
+    "https://glimglee.com",
+    "https://www.glimglee.com",
   ],
   contactPoint: {
     "@type": "ContactPoint",
@@ -57,7 +77,11 @@ const websiteSchema = {
   "@id": `${siteUrl}/#website`,
   url: siteUrl,
   name: "Glimglee",
-  alternateName: "Glimglee Gifting",
+  alternateName: [
+    "Glimglee",
+    "Glimglee Gifting",
+    "Glimglee Official Store",
+  ],
   publisher: {
     "@id": `${siteUrl}/#organization`,
   },
@@ -74,11 +98,17 @@ const websiteSchema = {
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "Glimglee — Modern Gifting, Made Personal | Luxury Hampers & Keepsakes",
+    default: "Glimglee™ — Modern Gifting, Made Personal | Luxury Hampers & Keepsakes",
     template: "%s | Glimglee",
   },
-  description: "Thoughtfully crafted luxury hampers, scented soy candles, artisan greeting cards, and personalized floating glass frames hand-finished with love across India.",
+  description: "Welcome to the official Glimglee store. Handcrafted personalized luxury hampers, scented soy candles, artisan greeting cards, and personalized floating glass photo frames with express delivery across India & worldwide.",
   keywords: [
+    "Glimglee",
+    "Glimglee store",
+    "Glimglee gifting",
+    "Glimglee India",
+    "Glimglee official",
+    "glimglee.com",
     "gifts",
     "personalized gifts",
     "gift hampers",
@@ -101,11 +131,11 @@ export const metadata: Metadata = {
     telephone: false,
   },
   alternates: {
-    canonical: "/",
+    canonical: siteUrl,
   },
   openGraph: {
-    title: "Glimglee — Modern Gifting, Made Personal",
-    description: "Make every celebration unforgettable with curated luxury hampers, custom keepsakes, and personalized gifts crafted with love in India.",
+    title: "Glimglee™ — Modern Gifting, Made Personal",
+    description: "Welcome to the official Glimglee store. Curated luxury hampers, hand-poured candles, and personalized keepsakes made with love in India.",
     url: siteUrl,
     siteName: "Glimglee",
     locale: "en_IN",
@@ -113,9 +143,15 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Glimglee — Modern Gifting, Made Personal",
-    description: "Luxury hampers, scented candles, custom frames & personalized gifts hand-finished in India.",
+    title: "Glimglee™ — Modern Gifting, Made Personal",
+    description: "Welcome to the official Glimglee store. Luxury hampers, scented candles, custom frames & personalized gifts.",
     creator: "@glimglee",
+  },
+  verification: {
+    google:
+      process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION ||
+      "sglVnaZNJUxBQDZIZW4ptMTJkXpHvmX1yGq3uvCBvBU",
+    yandex: process.env.NEXT_PUBLIC_YANDEX_VERIFICATION || "",
   },
   robots: {
     index: true,

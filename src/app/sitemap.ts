@@ -1,9 +1,10 @@
 import { MetadataRoute } from "next";
 import { getProducts } from "@/lib/services/products";
 import { getCategories } from "@/lib/services/categories";
+import { SITE_URL } from "@/lib/config/site";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://glimglee.com";
+  const baseUrl = SITE_URL;
 
   const staticRoutes: MetadataRoute.Sitemap = [
     { url: `${baseUrl}`, lastModified: new Date(), changeFrequency: "daily", priority: 1.0 },

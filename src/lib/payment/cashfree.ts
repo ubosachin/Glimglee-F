@@ -104,7 +104,7 @@ export class CashfreeService {
         customer_phone: cleanPhone,
       },
       order_meta: {
-        return_url: params.returnUrl || `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/checkout/status?order_id={order_id}`,
+        return_url: params.returnUrl || `${(process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000").replace(/\/+$/, "")}/checkout/status?order_id={order_id}`,
       },
       order_note: params.orderNote || `Glimglee Gifting Order #${params.orderId}`,
     };

@@ -116,12 +116,12 @@ export default function HomePage() {
               {/* Badge */}
               <div className="inline-flex items-center gap-2 px-3 sm:px-3.5 py-1.5 rounded-full bg-rose-100/90 border border-rose-200 text-rose-800 text-xs font-bold tracking-wide">
                 <Sparkles className="w-3.5 h-3.5 text-rose-600 flex-shrink-0" />
-                <span>{cms?.heroBadge || "Modern Gifting, Made Personal"}</span>
+                <span>{cms?.heroBadge || "Glimglee™ — Modern Gifting, Made Personal"}</span>
               </div>
 
               {/* Heading with Fluid Typography */}
               <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-stone-900 tracking-tight leading-[1.15]">
-                Make Every Moment{" "}
+                Glimglee™ — Make Every Moment{" "}
                 <span className="relative inline-block text-rose-600">
                   Glow
                   <svg
@@ -137,7 +137,7 @@ export default function HomePage() {
                     />
                   </svg>
                 </span>{" "}
-                With Meaningful Gifts.
+                With Personalized Gifts.
               </h1>
 
               {/* Subheading */}
@@ -498,6 +498,40 @@ export default function HomePage() {
           </Container>
         </section>
       )}
+
+      {/* 10. GLIMGLEE BRAND STORY & SEO AUTHORITY SECTION */}
+      <section className="py-12 bg-white border-t border-stone-200/80">
+        <Container>
+          <div className="max-w-4xl mx-auto space-y-6 text-stone-700">
+            <div className="text-center space-y-2">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-rose-600">
+                Official Brand Story
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-black text-stone-900 tracking-tight">
+                Glimglee™ — The Art of Meaningful Personalized Gifting
+              </h2>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs sm:text-sm leading-relaxed text-stone-600">
+              <div className="space-y-3">
+                <p>
+                  Welcome to <strong className="text-stone-900 font-semibold">Glimglee</strong>, India's premier luxury gifting studio. We design and handcraft heartfelt keepsakes that transform ordinary celebrations into extraordinary memories. From custom photo frames and scented soy wax candles to curated festive hampers and artisan cards, every Glimglee creation is personalized with unmatched attention to detail.
+                </p>
+                <p>
+                  Whether you are celebrating a milestone birthday, an intimate anniversary, a wedding, or looking for premium corporate hampers, Glimglee pairs bespoke artistry with protective gift packaging to ensure your sentiments arrive in pristine perfection.
+                </p>
+              </div>
+              <div className="space-y-3">
+                <p>
+                  <strong className="text-stone-900 font-semibold">Worldwide & Pan-India Delivery:</strong> We deliver to over 20,000+ pincodes across India and ship worldwide. Enjoy <span className="text-rose-700 font-semibold">Free Delivery across India on orders above ₹1,500</span> (flat ₹100 for orders under ₹1,500). For international gifters, we offer <span className="text-rose-700 font-semibold">Free Worldwide Shipping on orders above ₹5,000</span> (flat ₹400 for orders under ₹5,000).
+                </p>
+                <p>
+                  Backed by our <strong className="text-stone-900 font-semibold">100% Happiness Guarantee</strong>, every Glimglee parcel is packed with love, bubble-armored security, and sealed with signature wax seals. Experience modern gifting made deeply personal.
+                </p>
+              </div>
+            </div>
+          </div>
+        </Container>
+      </section>
     </div>
   );
 }

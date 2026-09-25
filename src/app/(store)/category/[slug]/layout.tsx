@@ -1,6 +1,7 @@
 import React from "react";
 import type { Metadata } from "next";
 import { getCategoryBySlug } from "@/lib/services/categories";
+import { SITE_URL } from "@/lib/config/site";
 
 interface CategoryLayoutProps {
   children: React.ReactNode;
@@ -13,7 +14,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://glimglee.com";
+  const siteUrl = SITE_URL;
 
   try {
     const category = await getCategoryBySlug(slug);
@@ -89,7 +90,7 @@ export default async function CategoryLayout({
   params,
 }: CategoryLayoutProps) {
   const { slug } = await params;
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://glimglee.com";
+  const siteUrl = SITE_URL;
 
   let collectionSchema = null;
   let breadcrumbSchema = null;

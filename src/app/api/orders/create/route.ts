@@ -119,7 +119,7 @@ export async function POST(req: Request) {
 
     if (!isCod) {
       try {
-        const origin = req.headers.get("origin") || process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+        const origin = (req.headers.get("origin") || process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000").replace(/\/+$/, "");
         const cfOrder = await cashfreeService.createOrder({
           orderId: newOrder.id,
           orderAmount: newOrder.total,

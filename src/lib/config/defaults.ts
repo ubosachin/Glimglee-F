@@ -2,9 +2,9 @@ import { HomepageCMS, StoreSettings } from "@/lib/types";
 
 export const defaultCMS: HomepageCMS = {
   announcement: "✨ Free Luxury Gift Wrapping on Orders Above ₹999",
-  heroBadge: "Modern Gifting, Made Personal",
-  heroHeading: "Make Every Moment Glow With Thoughtful Gifts.",
-  heroSubheading: "Curated gift hampers, artisan soy candles, and custom keepsakes hand-finished with love for birthdays, anniversaries, and life's sweetest milestones.",
+  heroBadge: "Glimglee™ — Modern Gifting, Made Personal",
+  heroHeading: "Glimglee™ — Make Every Moment Glow With Personalized Gifts.",
+  heroSubheading: "Curated luxury gift hampers, artisan soy candles, and custom keepsakes hand-finished with love for birthdays, anniversaries, and life's sweetest milestones.",
   heroPrimaryCtaText: "Explore Gifting",
   heroPrimaryCtaLink: "/shop",
   heroSecondaryCtaText: "Browse Collections",
