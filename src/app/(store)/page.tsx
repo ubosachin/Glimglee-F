@@ -97,7 +97,9 @@ export default function HomePage() {
     }
   };
 
-  const midBanner = banners.find((b) => b.placement === "mid_banner") || banners[0];
+  // Active promotional campaign banners (show all active banners on homepage)
+  const midBanners = banners.filter((b) => b.placement === "mid_banner" && b.active !== false);
+  const activeCampaignBanners = midBanners.length > 0 ? midBanners : banners.filter((b) => b.active !== false);
 
   return (
     <div className="space-y-12 sm:space-y-20 pb-16">
@@ -346,45 +348,114 @@ export default function HomePage() {
         onQuickView={setQuickViewProduct}
       />
 
-      {/* 5. MID PROMOTIONAL BANNER (Dynamic from Database) */}
-      {midBanner && (
-        <section className="py-4">
+      {/* 5. PROMOTIONAL CAMPAIGN BANNERS (Dynamic from Database) */}
+      {activeCampaignBanners.length > 0 && (
+        <section className="py-4 sm:py-6">
           <Container>
-            <div className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-stone-900 to-rose-950 text-white p-6 sm:p-12 shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
-              <div className="space-y-3 text-center md:text-left max-w-lg z-10">
-                {midBanner.badge && (
-                  <span className="inline-block px-3 py-1 rounded-full bg-rose-500/20 text-rose-300 text-[10px] font-bold uppercase tracking-wider border border-rose-500/30">
-                    {midBanner.badge}
-                  </span>
-                )}
-                <h3 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight leading-tight">
-                  {midBanner.title}
-                </h3>
-                <p className="text-xs sm:text-sm text-stone-300 leading-relaxed">
-                  {midBanner.subtitle}
-                </p>
-                <div className="pt-2">
-                  <Link
-                    href={midBanner.ctaLink || "/shop"}
-                    className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-white text-stone-950 font-bold text-xs hover:bg-rose-50 transition-colors shadow-md"
-                  >
-                    <span>{midBanner.ctaText || "Explore Gifts"}</span>
-                    <ArrowRight className="w-3.5 h-3.5 text-rose-600" />
-                  </Link>
+            {activeCampaignBanners.length === 1 ? (
+              // Single Full-Width Banner
+              <div className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-stone-900 via-stone-850 to-rose-950 text-white p-6 sm:p-12 shadow-xl flex flex-col md:flex-row items-center justify-between gap-6 border border-stone-800">
+                <div className="space-y-3 text-center md:text-left max-w-lg z-10">
+                  {activeCampaignBanners[0].badge && (
+                    <span className="inline-block px-3 py-1 rounded-full bg-rose-500/20 text-rose-300 text-[10px] font-bold uppercase tracking-wider border border-rose-500/30">
+                      {activeCampaignBanners[0].badge}
+                    </span>
+                  )}
+                  <h3 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight leading-tight">
+                    {activeCampaignBanners[0].title}
+                  </h3>
+                  <p className="text-xs sm:text-sm text-stone-300 leading-relaxed">
+                    {activeCampaignBanners[0].subtitle}
+                  </p>
+                  <div className="pt-2">
+                    <Link
+                      href={activeCampaignBanners[0].ctaLink || "/shop"}
+                      className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-white text-stone-950 font-bold text-xs hover:bg-rose-50 hover:gap-3 transition-all shadow-md"
+                    >
+                      <span>{activeCampaignBanners[0].ctaText || "Explore Gifts"}</span>
+                      <ArrowRight className="w-3.5 h-3.5 text-rose-600" />
+                    </Link>
+                  </div>
                 </div>
-              </div>
 
-              {midBanner.imageUrl && (
-                <div className="relative w-full md:w-72 h-44 sm:h-56 rounded-2xl overflow-hidden shadow-md flex-shrink-0">
-                  <Image
-                    src={midBanner.imageUrl}
-                    alt={midBanner.title}
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-              )}
-            </div>
+                {activeCampaignBanners[0].imageUrl && (
+                  <div className="relative w-full md:w-80 h-48 sm:h-64 rounded-2xl overflow-hidden shadow-md flex-shrink-0">
+                    <Image
+                      src={activeCampaignBanners[0].imageUrl}
+                      alt={activeCampaignBanners[0].title}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                )}
+              </div>
+            ) : (
+              // Multi-Banner Campaign Grid (e.g. Side-by-Side Dual Cards for 2 Banners)
+              <div
+                className={`grid grid-cols-1 ${
+                  activeCampaignBanners.length === 2
+                    ? "md:grid-cols-2"
+                    : "md:grid-cols-2 lg:grid-cols-3"
+                } gap-6 sm:gap-8`}
+              >
+                {activeCampaignBanners.map((bnr) => (
+                  <div
+                    key={bnr.id}
+                    className="relative rounded-3xl overflow-hidden shadow-xl bg-gradient-to-br from-stone-950 via-stone-900 to-rose-950 text-white flex flex-col justify-between group border border-stone-800 hover:border-rose-500/40 transition-all duration-300 hover:shadow-2xl hover:shadow-rose-950/20"
+                  >
+                    {/* Top Image Banner with Aspect 16:9 */}
+                    <div className="relative w-full aspect-[16/9] overflow-hidden bg-stone-900">
+                      {bnr.imageUrl ? (
+                        <Image
+                          src={bnr.imageUrl}
+                          alt={bnr.title}
+                          fill
+                          className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-stone-800 text-stone-500">
+                          <Gift className="w-12 h-12" />
+                        </div>
+                      )}
+                      <div className="absolute inset-0 bg-gradient-to-t from-stone-950 via-stone-950/20 to-transparent" />
+
+                      {bnr.badge && (
+                        <div className="absolute top-4 left-4 z-10">
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-600/90 text-white text-[10px] font-black uppercase tracking-wider backdrop-blur-md shadow-md border border-rose-400/30">
+                            <Sparkles className="w-3 h-3 text-rose-200" />
+                            <span>{bnr.badge}</span>
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Bottom Card Content */}
+                    <div className="p-6 sm:p-7 flex-1 flex flex-col justify-between space-y-4 bg-stone-950/90">
+                      <div className="space-y-2">
+                        <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight leading-snug">
+                          {bnr.title}
+                        </h3>
+                        {bnr.subtitle && (
+                          <p className="text-xs sm:text-sm text-stone-300 line-clamp-2 leading-relaxed">
+                            {bnr.subtitle}
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="pt-2">
+                        <Link
+                          href={bnr.ctaLink || "/shop"}
+                          className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-2xl bg-white text-stone-950 font-black text-xs hover:bg-rose-50 hover:gap-3 transition-all shadow-md group-hover:shadow-rose-500/20 active:scale-95"
+                        >
+                          <span>{bnr.ctaText || "Shop Now"}</span>
+                          <ArrowRight className="w-3.5 h-3.5 text-rose-600" />
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </Container>
         </section>
       )}
