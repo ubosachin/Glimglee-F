@@ -201,8 +201,23 @@ export async function getProducts(options?: ProductFilterOptions): Promise<Produ
         filtered.sort((a, b) => (b.bestseller ? 1 : 0) - (a.bestseller ? 1 : 0));
         break;
       default:
+        // Default / featured: sort by explicit displayOrder (1, 2, 3...)
+        filtered.sort((a, b) => {
+          const orderA = typeof a.displayOrder === "number" && a.displayOrder > 0 ? a.displayOrder : (a.sortOrder ?? 999999);
+          const orderB = typeof b.displayOrder === "number" && b.displayOrder > 0 ? b.displayOrder : (b.sortOrder ?? 999999);
+          if (orderA !== orderB) return orderA - orderB;
+          return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
+        });
         break;
     }
+  } else {
+    // Default sorting when no sort parameter provided: prioritize displayOrder
+    filtered.sort((a, b) => {
+      const orderA = typeof a.displayOrder === "number" && a.displayOrder > 0 ? a.displayOrder : (a.sortOrder ?? 999999);
+      const orderB = typeof b.displayOrder === "number" && b.displayOrder > 0 ? b.displayOrder : (b.sortOrder ?? 999999);
+      if (orderA !== orderB) return orderA - orderB;
+      return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
+    });
   }
 
   if (options?.limitCount && options.limitCount > 0) {
@@ -332,6 +347,8 @@ export async function saveProduct(product: Partial<Product> & { id?: string }): 
     featured: product.featured ?? false,
     bestseller: product.bestseller ?? false,
     newArrival: product.newArrival ?? false,
+    displayOrder: product.displayOrder ?? product.sortOrder,
+    sortOrder: product.sortOrder ?? product.displayOrder,
     status: (product.status as any) || (product.active === false ? "archived" : "active"),
     active: product.active ?? (product.status !== "archived"),
     createdAt: product.createdAt || now,
@@ -407,3 +424,51 @@ export async function deleteProduct(id: string): Promise<boolean> {
 
   return true;
 }
+
+export async function updateProductOrder(
+  items: Array<{ id: string; displayOrder: number }>
+): Promise<boolean> {
+  if (!items || items.length === 0) return false;
+
+  // Invalidate in-memory cache
+  invalidateProductsCache();
+
+  // Optimistically update local storage
+  if (typeof window !== "undefined") {
+    try {
+      const local = getLocalProducts();
+      const orderMap = new Map(items.map((it) => [it.id, it.displayOrder]));
+      const updated = local.map((p) => {
+        if (orderMap.has(p.id)) {
+          const newOrder = orderMap.get(p.id)!;
+          return { ...p, displayOrder: newOrder, sortOrder: newOrder };
+        }
+        return p;
+      });
+      // Sort local array by displayOrder
+      updated.sort((a, b) => {
+        const orderA = typeof a.displayOrder === "number" && a.displayOrder > 0 ? a.displayOrder : 999999;
+        const orderB = typeof b.displayOrder === "number" && b.displayOrder > 0 ? b.displayOrder : 999999;
+        if (orderA !== orderB) return orderA - orderB;
+        return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
+      });
+      saveLocalProducts(updated);
+    } catch (e) {
+      console.warn("Local storage updateProductOrder error:", e);
+    }
+  }
+
+  // Persist to server API
+  try {
+    const res = await fetch("/api/products/reorder", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ items }),
+    });
+    return res.ok;
+  } catch (error) {
+    console.error("updateProductOrder network error:", error);
+    return false;
+  }
+}
+

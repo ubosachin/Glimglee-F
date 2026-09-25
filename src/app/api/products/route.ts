@@ -73,18 +73,32 @@ export async function GET(req: NextRequest) {
       }
 
       // Sorting
-      let sortOptions: any = { createdAt: -1 };
-      if (sort === "price-asc") sortOptions = { price: 1 };
-      else if (sort === "price-desc") sortOptions = { price: -1 };
-      else if (sort === "rating") sortOptions = { rating: -1, reviewCount: -1 };
-      else if (sort === "bestseller") sortOptions = { bestseller: -1, rating: -1 };
+      let products: Product[] = [];
+      if (sort === "price-asc" || sort === "price-desc" || sort === "rating" || sort === "bestseller" || sort === "newest") {
+        let sortOptions: any = { createdAt: -1 };
+        if (sort === "price-asc") sortOptions = { price: 1 };
+        else if (sort === "price-desc") sortOptions = { price: -1 };
+        else if (sort === "rating") sortOptions = { rating: -1, reviewCount: -1 };
+        else if (sort === "bestseller") sortOptions = { bestseller: -1, rating: -1 };
+        else if (sort === "newest") sortOptions = { createdAt: -1 };
 
-      const products = await col
-        .find(filter)
-        .sort(sortOptions)
-        .skip(offset)
-        .limit(limit)
-        .toArray();
+        products = await col
+          .find(filter)
+          .sort(sortOptions)
+          .skip(offset)
+          .limit(limit)
+          .toArray();
+      } else {
+        // Default / Featured: Sort by displayOrder ascending, fallback to createdAt descending
+        const allItems = await col.find(filter).toArray();
+        allItems.sort((a, b) => {
+          const orderA = typeof a.displayOrder === "number" && a.displayOrder > 0 ? a.displayOrder : (a.sortOrder ?? 999999);
+          const orderB = typeof b.displayOrder === "number" && b.displayOrder > 0 ? b.displayOrder : (b.sortOrder ?? 999999);
+          if (orderA !== orderB) return orderA - orderB;
+          return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
+        });
+        products = allItems.slice(offset, offset + limit);
+      }
 
       return { products };
     });

@@ -52,6 +52,8 @@ export interface Product {
   newArrival: boolean;
   rating: number;
   reviewCount: number;
+  displayOrder?: number;
+  sortOrder?: number;
   status: "active" | "draft" | "archived";
   active?: boolean;
   createdAt: string;

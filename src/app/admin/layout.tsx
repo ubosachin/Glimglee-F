@@ -7,6 +7,7 @@ import { useAuth } from "@/lib/auth/AuthContext";
 import {
   LayoutDashboard,
   Package,
+  ListOrdered,
   Layers,
   Archive,
   ShoppingBag,
@@ -42,6 +43,7 @@ export default function AdminLayout({
       group: "Catalog",
       items: [
         { label: "Products", href: "/admin/products", icon: Package },
+        { label: "Product Order & Ranking", href: "/admin/product-ordering", icon: ListOrdered },
         { label: "Categories", href: "/admin/categories", icon: Layers },
         { label: "Inventory & Stock", href: "/admin/inventory", icon: Archive },
       ],
