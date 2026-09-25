@@ -12,8 +12,8 @@ export default function FAQPage() {
       a: "When you choose a customizable gift (such as our floating glass frames or custom candle labels), you will see live fields to upload your favorite photo, write a personalized message, and choose engraving fonts. Our team reviews your uploaded photo for clarity before high-resolution printing.",
     },
     {
-      q: "How long does delivery take across India?",
-      a: "Standard delivery typically arrives in 3–5 business days. We also offer Priority Air Express (24–48 hours) for metro cities (Delhi NCR, Mumbai, Bangalore, Pune, Hyderabad, Chennai, Kolkata).",
+      q: "What are your delivery timelines and shipping rates across India & Worldwide?",
+      a: "We deliver across India and worldwide! For India, orders above ₹1,500 enjoy FREE Delivery (flat ₹100 for orders under ₹1,500), typically arriving in 3–5 business days. For International orders (190+ countries), orders above ₹5,000 get FREE Worldwide Delivery (flat ₹400 for orders under ₹5,000), arriving in 7–12 business days via express air courier.",
     },
     {
       q: "Is luxury gift packaging included with every order?",

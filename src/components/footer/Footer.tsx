@@ -136,13 +136,13 @@ export const Footer: React.FC = () => {
           </div>
 
           {/* Desktop Links (Hidden on Mobile) */}
-          <div className="hidden lg:grid lg:col-span-3 grid-cols-3 gap-8">
+          <div className="hidden lg:grid lg:col-span-3 grid-cols-4 gap-6">
             {/* Column 1: Collections */}
             <div className="space-y-3">
-              <h4 className="text-xs font-bold text-white uppercase tracking-wider">Shop Collections</h4>
+              <h4 className="text-xs font-bold text-white uppercase tracking-wider">Shop</h4>
               <ul className="space-y-2 text-xs text-stone-400">
                 {categories.length > 0 ? (
-                  categories.map((c) => (
+                  categories.slice(0, 4).map((c) => (
                     <li key={c.id}>
                       <Link href={`/category/${c.slug}`} className="hover:text-white transition-colors">
                         {c.name}
@@ -152,11 +152,11 @@ export const Footer: React.FC = () => {
                 ) : (
                   <>
                     <li><Link href="/shop" className="hover:text-white transition-colors">All Keepsakes</Link></li>
-                    <li><Link href="/categories" className="hover:text-white transition-colors">Browse Collections</Link></li>
+                    <li><Link href="/categories" className="hover:text-white transition-colors">Collections</Link></li>
                   </>
                 )}
-                <li><Link href="/shop?maxPrice=499" className="hover:text-white transition-colors text-amber-300 font-semibold">Gifts Under ₹499</Link></li>
-                <li><Link href="/shop?maxPrice=999" className="hover:text-white transition-colors text-amber-300 font-semibold">Gifts Under ₹999</Link></li>
+                <li><Link href="/shop?maxPrice=499" className="hover:text-white transition-colors text-amber-300 font-semibold">Under ₹499</Link></li>
+                <li><Link href="/shop?maxPrice=999" className="hover:text-white transition-colors text-amber-300 font-semibold">Under ₹999</Link></li>
               </ul>
             </div>
 
@@ -165,14 +165,14 @@ export const Footer: React.FC = () => {
               <h4 className="text-xs font-bold text-white uppercase tracking-wider">Occasions</h4>
               <ul className="space-y-2 text-xs text-stone-400">
                 <li><Link href="/shop?occasion=Birthday" className="hover:text-white transition-colors">Birthday Gifts</Link></li>
-                <li><Link href="/shop?occasion=Anniversary" className="hover:text-white transition-colors">Anniversary Tokens</Link></li>
-                <li><Link href="/shop?occasion=Corporate" className="hover:text-white transition-colors">Corporate Gifting</Link></li>
-                <li><Link href="/categories" className="hover:text-white transition-colors">Festivals & Celebrations</Link></li>
-                <li><Link href="/orders/track" className="hover:text-white transition-colors text-rose-400 font-semibold">Track My Package</Link></li>
+                <li><Link href="/shop?occasion=Anniversary" className="hover:text-white transition-colors">Anniversary</Link></li>
+                <li><Link href="/shop?occasion=Corporate" className="hover:text-white transition-colors">Corporate Hampers</Link></li>
+                <li><Link href="/categories" className="hover:text-white transition-colors">Festivals</Link></li>
+                <li><Link href="/shop" className="hover:text-white transition-colors">Couple Gifts</Link></li>
               </ul>
             </div>
 
-            {/* Column 3: Customer Care & Policies */}
+            {/* Column 3: Customer Care */}
             <div className="space-y-3">
               <h4 className="text-xs font-bold text-white uppercase tracking-wider">Customer Care</h4>
               <ul className="space-y-2 text-xs text-stone-400">
@@ -186,12 +186,20 @@ export const Footer: React.FC = () => {
                   </Link>
                 </li>
                 <li><Link href="/contact" className="hover:text-white transition-colors">Contact Support</Link></li>
-                <li><Link href="/faq" className="hover:text-white transition-colors">FAQs</Link></li>
-                <li><Link href="/about" className="hover:text-white transition-colors">Our Story & Ethics</Link></li>
-                <li><Link href="/shipping-policy" className="hover:text-white transition-colors">Shipping Policy</Link></li>
-                <li><Link href="/return-policy" className="hover:text-white transition-colors">Returns & Replacements</Link></li>
-                <li><Link href="/privacy-policy" className="hover:text-white transition-colors">Photo Privacy Policy</Link></li>
+                <li><Link href="/faq" className="hover:text-white transition-colors">Help & FAQs</Link></li>
+                <li><Link href="/about" className="hover:text-white transition-colors">Our Brand Story</Link></li>
+              </ul>
+            </div>
+
+            {/* Column 4: Legal & Policies */}
+            <div className="space-y-3">
+              <h4 className="text-xs font-bold text-white uppercase tracking-wider">Legal & Policies</h4>
+              <ul className="space-y-2 text-xs text-stone-400">
+                <li><Link href="/privacy-policy" className="hover:text-white transition-colors">Privacy Policy</Link></li>
                 <li><Link href="/terms" className="hover:text-white transition-colors">Terms of Service</Link></li>
+                <li><Link href="/shipping-policy" className="hover:text-white transition-colors">Shipping Policy</Link></li>
+                <li><Link href="/return-policy" className="hover:text-white transition-colors">Return & Replacement</Link></li>
+                <li><Link href="/contact" className="hover:text-white transition-colors">Grievance Redressal</Link></li>
               </ul>
             </div>
           </div>
@@ -243,19 +251,18 @@ export const Footer: React.FC = () => {
                   <li><Link href="/shop?occasion=Birthday" className="hover:text-white">Birthday Gifts</Link></li>
                   <li><Link href="/shop?occasion=Anniversary" className="hover:text-white">Anniversary Tokens</Link></li>
                   <li><Link href="/shop?occasion=Corporate" className="hover:text-white">Corporate Gifting</Link></li>
-                  <li><Link href="/categories" className="hover:text-white">Festivals & Diwali</Link></li>
-                  <li><Link href="/orders/track" className="text-rose-400 font-semibold">Track Delivery</Link></li>
+                  <li><Link href="/categories" className="hover:text-white">Festivals & Celebrations</Link></li>
                 </ul>
               )}
             </div>
 
-            {/* Section: Customer Care & Policies */}
+            {/* Section: Customer Care */}
             <div>
               <button
                 onClick={() => toggleSection("care")}
                 className="w-full py-3.5 flex items-center justify-between text-xs font-bold text-white uppercase tracking-wider"
               >
-                <span>Customer Care & Policies</span>
+                <span>Customer Care</span>
                 {openSection === "care" ? <Minus className="w-4 h-4 text-rose-400" /> : <Plus className="w-4 h-4 text-stone-400" />}
               </button>
               {openSection === "care" && (
@@ -269,22 +276,52 @@ export const Footer: React.FC = () => {
                   <li><Link href="/contact" className="hover:text-white">Contact & Support</Link></li>
                   <li><Link href="/faq" className="hover:text-white">FAQs</Link></li>
                   <li><Link href="/about" className="hover:text-white">Our Story & Craft</Link></li>
-                  <li><Link href="/shipping-policy" className="hover:text-white">Shipping Policy</Link></li>
-                  <li><Link href="/return-policy" className="hover:text-white">Returns & Replacements</Link></li>
-                  <li><Link href="/privacy-policy" className="hover:text-white">Photo Security & Privacy</Link></li>
+                </ul>
+              )}
+            </div>
+
+            {/* Section: Legal & Policies */}
+            <div>
+              <button
+                onClick={() => toggleSection("legal")}
+                className="w-full py-3.5 flex items-center justify-between text-xs font-bold text-white uppercase tracking-wider"
+              >
+                <span>Legal & Policies</span>
+                {openSection === "legal" ? <Minus className="w-4 h-4 text-rose-400" /> : <Plus className="w-4 h-4 text-stone-400" />}
+              </button>
+              {openSection === "legal" && (
+                <ul className="pb-3.5 space-y-2 text-xs text-stone-400 animate-in fade-in">
+                  <li><Link href="/privacy-policy" className="hover:text-white">Privacy Policy</Link></li>
                   <li><Link href="/terms" className="hover:text-white">Terms of Service</Link></li>
+                  <li><Link href="/shipping-policy" className="hover:text-white">Shipping Policy</Link></li>
+                  <li><Link href="/return-policy" className="hover:text-white">Return & Replacement Policy</Link></li>
+                  <li><Link href="/contact" className="hover:text-white">Grievance Redressal</Link></li>
                 </ul>
               )}
             </div>
           </div>
         </div>
 
-        {/* Copyright */}
-        <div className="mt-12 pt-8 border-t border-stone-800 flex flex-col sm:flex-row items-center justify-between text-xs text-stone-500 gap-3 text-center sm:text-left">
-          <p>© {new Date().getFullYear()} Glimglee Technologies Pvt. Ltd. All rights reserved. Made with love in India.</p>
-          <p className="flex items-center justify-center gap-1">
-            Modern gifting, made personal <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500" />
-          </p>
+        {/* Legal Links Bar & Copyright */}
+        <div className="mt-12 pt-8 border-t border-stone-800 space-y-4">
+          <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs text-stone-400">
+            <Link href="/privacy-policy" className="hover:text-white transition-colors">Privacy Policy</Link>
+            <span className="text-stone-700 hidden sm:inline">•</span>
+            <Link href="/terms" className="hover:text-white transition-colors">Terms of Service</Link>
+            <span className="text-stone-700 hidden sm:inline">•</span>
+            <Link href="/shipping-policy" className="hover:text-white transition-colors">Shipping Policy</Link>
+            <span className="text-stone-700 hidden sm:inline">•</span>
+            <Link href="/return-policy" className="hover:text-white transition-colors">Return & Replacement Policy</Link>
+            <span className="text-stone-700 hidden sm:inline">•</span>
+            <Link href="/contact" className="hover:text-white transition-colors">Grievance Desk</Link>
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-center justify-between text-xs text-stone-500 gap-3 text-center sm:text-left">
+            <p>© {new Date().getFullYear()} Glimglee Technologies Pvt. Ltd. All rights reserved. Made with love in India.</p>
+            <p className="flex items-center justify-center gap-1">
+              Modern gifting, made personal <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500" />
+            </p>
+          </div>
         </div>
       </Container>
     </footer>

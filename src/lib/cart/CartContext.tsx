@@ -38,8 +38,8 @@ interface CartContextType {
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 const CART_STORAGE_KEY = "glimglee_cart_v1";
-const FREE_SHIPPING_THRESHOLD = 999;
-const STANDARD_SHIPPING_FEE = 70;
+const FREE_SHIPPING_THRESHOLD = 1500;
+const STANDARD_SHIPPING_FEE = 100;
 const GIFT_WRAP_FEE = 99;
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {

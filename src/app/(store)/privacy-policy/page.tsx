@@ -4,7 +4,17 @@ import { ShieldCheck, Lock, EyeOff, Server, ArrowLeft } from "lucide-react";
 
 export const metadata = {
   title: "Privacy & Photo Security Policy | Glimglee Gifting",
-  description: "Learn how Glimglee protects your personal memories, uploaded photographs, custom engravings, and transaction data.",
+  description:
+    "Learn how Glimglee protects your personal memories, uploaded photographs, custom engravings, and transaction data.",
+  alternates: {
+    canonical: "/privacy-policy",
+  },
+  openGraph: {
+    title: "Privacy & Photo Security Policy | Glimglee Gifting",
+    description:
+      "Enterprise encryption, private photo rendering, and strict memory deletion protocols for personalized gifts.",
+    url: "https://glimglee.com/privacy-policy",
+  },
 };
 
 export default function PrivacyPolicyPage() {

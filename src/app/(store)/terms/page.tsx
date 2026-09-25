@@ -4,7 +4,17 @@ import { FileText, Scale, CheckCircle2, AlertCircle, ArrowLeft } from "lucide-re
 
 export const metadata = {
   title: "Terms & Conditions | Glimglee Gifting",
-  description: "Terms of service, acceptable use for custom engraving and photo printing, pricing accuracy, and intellectual property.",
+  description:
+    "Terms of service, acceptable use for custom engraving and photo printing, pricing accuracy, and intellectual property.",
+  alternates: {
+    canonical: "/terms",
+  },
+  openGraph: {
+    title: "Terms & Conditions | Glimglee Gifting",
+    description:
+      "Terms of service, custom order processing guidelines, and merchant fulfillment commitments.",
+    url: "https://glimglee.com/terms",
+  },
 };
 
 export default function TermsPage() {

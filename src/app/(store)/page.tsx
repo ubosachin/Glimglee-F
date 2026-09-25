@@ -410,7 +410,7 @@ export default function HomePage() {
 
       <ProductSection
         title="Cherished Hampers Under ₹999"
-        subtitle="Delightful luxury boxes and photo frames under ₹999 eligible for free delivery"
+        subtitle="Delightful luxury boxes and photo frames handcrafted with love"
         viewAllHref="/shop?maxPrice=999"
         products={under999}
         onQuickView={setQuickViewProduct}
