@@ -77,8 +77,22 @@ export default function HomePage() {
     const handleCatUpdate = () => {
       getCategories().then(setCategories);
     };
+    const handleCmsUpdate = () => {
+      getCMSContent().then(setCms);
+    };
+    const handleBannerUpdate = () => {
+      getActiveBanners().then(setBanners);
+    };
+
     window.addEventListener("glimglee_categories_updated", handleCatUpdate);
-    return () => window.removeEventListener("glimglee_categories_updated", handleCatUpdate);
+    window.addEventListener("glimglee_cms_updated", handleCmsUpdate);
+    window.addEventListener("glimglee_banners_updated", handleBannerUpdate);
+
+    return () => {
+      window.removeEventListener("glimglee_categories_updated", handleCatUpdate);
+      window.removeEventListener("glimglee_cms_updated", handleCmsUpdate);
+      window.removeEventListener("glimglee_banners_updated", handleBannerUpdate);
+    };
   }, []);
 
   // Filter dynamic product categories

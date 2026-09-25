@@ -67,8 +67,9 @@ export async function getBanners(placement?: Banner["placement"]): Promise<Banne
       }
     } else {
       try {
-        const url = placement ? `/api/banners?placement=${encodeURIComponent(placement)}` : "/api/banners";
-        const res = await fetch(url);
+        const sep = placement ? "&" : "?";
+        const url = (placement ? `/api/banners?placement=${encodeURIComponent(placement)}` : "/api/banners") + `${sep}t=${Date.now()}`;
+        const res = await fetch(url, { cache: "no-store", headers: { "Cache-Control": "no-cache" } });
         if (res.ok) {
           const data = await res.json();
           if (Array.isArray(data.banners)) {
@@ -160,6 +161,9 @@ export async function saveBanner(banner: Partial<Banner> & { id?: string }): Pro
   }
   saveLocalBanners(local);
   invalidateBannersCache();
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new CustomEvent("glimglee_banners_updated", { detail: fullBanner }));
+  }
   return fullBanner;
 }
 
@@ -189,5 +193,8 @@ export async function deleteBanner(id: string): Promise<boolean> {
   const local = getLocalBanners().filter((b) => b.id !== id);
   saveLocalBanners(local);
   invalidateBannersCache();
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new CustomEvent("glimglee_banners_updated", { detail: { id } }));
+  }
   return true;
 }

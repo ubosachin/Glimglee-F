@@ -109,7 +109,10 @@ export async function adjustProductStock(
 export async function getCMSContent(): Promise<HomepageCMS> {
   if (typeof window !== "undefined") {
     try {
-      const res = await fetch("/api/cms");
+      const res = await fetch(`/api/cms?t=${Date.now()}`, {
+        cache: "no-store",
+        headers: { "Cache-Control": "no-cache" },
+      });
       if (res.ok) {
         const data = await res.json();
         if (data.cms) {
@@ -143,11 +146,18 @@ export async function updateCMSContent(cms: HomepageCMS): Promise<HomepageCMS> {
   localDb.set("cms", cms);
   if (typeof window !== "undefined") {
     try {
-      await fetch("/api/cms", {
+      const res = await fetch("/api/cms", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(cms),
       });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.cms) {
+          localDb.set("cms", data.cms);
+        }
+      }
+      window.dispatchEvent(new CustomEvent("glimglee_cms_updated", { detail: cms }));
     } catch (e) {
       console.error("POST /api/cms error:", e);
     }

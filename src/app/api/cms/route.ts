@@ -1,35 +1,46 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDb, isMongoConfigured } from "@/lib/mongodb/client";
-import { getOrSetCache, invalidateCacheKey } from "@/lib/cache/apiCache";
+import { invalidateCacheKey } from "@/lib/cache/apiCache";
 import { defaultCMS } from "@/lib/config/defaults";
 import { HomepageCMS } from "@/lib/types";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export async function GET() {
   try {
-    const data = await getOrSetCache("cms:homepage", 180, async () => {
-      if (!isMongoConfigured) {
-        return { cms: defaultCMS };
+    if (!isMongoConfigured) {
+      return NextResponse.json(
+        { cms: defaultCMS },
+        { headers: { "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0" } }
+      );
+    }
+
+    const db = await getDb();
+    const doc = await db.collection("cms").findOne({ _id: "homepage" as any });
+
+    if (!doc) {
+      return NextResponse.json(
+        { cms: defaultCMS },
+        { headers: { "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0" } }
+      );
+    }
+
+    const { _id, ...cms } = doc as any;
+    return NextResponse.json(
+      { cms },
+      {
+        headers: {
+          "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0",
+        },
       }
-
-      const db = await getDb();
-      const doc = await db.collection("cms").findOne({ _id: "homepage" as any });
-
-      if (!doc) {
-        return { cms: defaultCMS };
-      }
-
-      const { _id, ...cms } = doc as any;
-      return { cms };
-    });
-
-    return NextResponse.json(data, {
-      headers: {
-        "Cache-Control": "public, s-maxage=180, stale-while-revalidate=600",
-      },
-    });
+    );
   } catch (err: any) {
     console.error("GET /api/cms error:", err);
-    return NextResponse.json({ cms: defaultCMS });
+    return NextResponse.json(
+      { cms: defaultCMS },
+      { headers: { "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0" } }
+    );
   }
 }
 
@@ -51,7 +62,10 @@ export async function POST(req: NextRequest) {
       { upsert: true }
     );
 
-    return NextResponse.json({ success: true, cms });
+    return NextResponse.json(
+      { success: true, cms },
+      { headers: { "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0" } }
+    );
   } catch (err: any) {
     console.error("POST /api/cms error:", err);
     return NextResponse.json({ error: err?.message }, { status: 500 });

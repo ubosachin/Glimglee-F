@@ -4,27 +4,30 @@ import { getOrSetCache, invalidateCacheKey } from "@/lib/cache/apiCache";
 import { defaultStoreSettings } from "@/lib/config/defaults";
 import { StoreSettings } from "@/lib/types";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export async function GET() {
   try {
-    const data = await getOrSetCache("settings:store", 300, async () => {
-      if (!isMongoConfigured) {
-        return { settings: defaultStoreSettings };
-      }
+    if (!isMongoConfigured) {
+      return NextResponse.json({ settings: defaultStoreSettings }, {
+        headers: { "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0" }
+      });
+    }
 
-      const db = await getDb();
-      const doc = await db.collection("settings").findOne({ _id: "store" as any });
+    const db = await getDb();
+    const doc = await db.collection("settings").findOne({ _id: "store" as any });
 
-      if (!doc) {
-        return { settings: defaultStoreSettings };
-      }
+    if (!doc) {
+      return NextResponse.json({ settings: defaultStoreSettings }, {
+        headers: { "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0" }
+      });
+    }
 
-      const { _id, ...settings } = doc as any;
-      return { settings };
-    });
-
-    return NextResponse.json(data, {
+    const { _id, ...settings } = doc as any;
+    return NextResponse.json({ settings }, {
       headers: {
-        "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600",
+        "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
       },
     });
   } catch (err: any) {

@@ -3,37 +3,36 @@ import { getDb, isMongoConfigured } from "@/lib/mongodb/client";
 import { getOrSetCache, invalidateCacheKey } from "@/lib/cache/apiCache";
 import { Banner } from "@/lib/types";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const placement = searchParams.get("placement");
     const activeOnly = searchParams.get("active") === "true";
 
-    const cacheKey = `banners:${placement || "all"}:${activeOnly}`;
+    if (!isMongoConfigured) {
+      return NextResponse.json({ banners: [] }, {
+        headers: { "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0" }
+      });
+    }
 
-    const data = await getOrSetCache(cacheKey, 120, async () => {
-      if (!isMongoConfigured) {
-        return { banners: [] };
-      }
+    const db = await getDb();
+    const col = db.collection<Banner>("banners");
 
-      const db = await getDb();
-      const col = db.collection<Banner>("banners");
+    const filter: any = {};
+    if (placement) filter.placement = placement;
+    if (activeOnly) filter.active = true;
 
-      const filter: any = {};
-      if (placement) filter.placement = placement;
-      if (activeOnly) filter.active = true;
+    const banners = await col
+      .find(filter)
+      .sort({ priority: 1, createdAt: -1 })
+      .toArray();
 
-      const banners = await col
-        .find(filter)
-        .sort({ priority: 1, createdAt: -1 })
-        .toArray();
-
-      return { banners };
-    });
-
-    return NextResponse.json(data, {
+    return NextResponse.json({ banners }, {
       headers: {
-        "Cache-Control": "public, s-maxage=120, stale-while-revalidate=600",
+        "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
       },
     });
   } catch (err: any) {
