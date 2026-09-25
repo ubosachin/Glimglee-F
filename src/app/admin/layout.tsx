@@ -12,7 +12,9 @@ import {
   Archive,
   ShoppingBag,
   Users,
+  UserCheck,
   Ticket,
+  Send,
   Image as ImageIcon,
   MessageSquare,
   FileText,
@@ -79,16 +81,18 @@ export default function AdminLayout({
       ],
     },
     {
-      group: "Fulfillment",
+      group: "Orders & Users",
       items: [
         { label: "Orders & Shipping", href: "/admin/orders", icon: ShoppingBag },
-        { label: "Customers", href: "/admin/customers", icon: Users },
+        { label: "User Management & Roles", href: "/admin/users", icon: Users },
+        { label: "Customer Directory", href: "/admin/customers", icon: UserCheck },
       ],
     },
     {
-      group: "Marketing & CMS",
+      group: "Marketing & Outreach",
       items: [
         { label: "Promo Coupons", href: "/admin/coupons", icon: Ticket },
+        { label: "Email Broadcast (Gmail)", href: "/admin/broadcast", icon: Send },
         { label: "Store Banners", href: "/admin/banners", icon: ImageIcon },
         { label: "Homepage CMS", href: "/admin/cms", icon: FileText },
         { label: "Reviews Moderation", href: "/admin/reviews", icon: MessageSquare },

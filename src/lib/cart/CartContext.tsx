@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState, useMemo } from "react";
 import { CartItem, Product, Coupon } from "@/lib/types";
-import { validateCoupon } from "@/lib/services/storeDb";
+import { validateCoupon, getAutoApplicableCoupon } from "@/lib/services/storeDb";
 
 interface CartContextType {
   items: CartItem[];
@@ -76,14 +76,27 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [items, isLoaded]);
 
-  // Recalculate coupon if cart changes
+  const userDismissedCouponRef = React.useRef(false);
+
+  // Recalculate or auto-apply coupon if cart items change
   useEffect(() => {
+    if (!isLoaded) return;
+
+    const currentSubtotal = items.reduce(
+      (sum, item) => sum + item.product.price * item.quantity,
+      0
+    );
+
+    if (currentSubtotal === 0) {
+      if (appliedCoupon) {
+        setAppliedCoupon(null);
+        setDiscountAmount(0);
+      }
+      return;
+    }
+
     if (appliedCoupon) {
-      const currentSubtotal = items.reduce(
-        (sum, item) => sum + item.product.price * item.quantity,
-        0
-      );
-      if (currentSubtotal < appliedCoupon.minOrderValue) {
+      if (currentSubtotal < (appliedCoupon.minOrderValue || 0)) {
         setAppliedCoupon(null);
         setDiscountAmount(0);
       } else {
@@ -94,11 +107,19 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
           }
           setDiscountAmount(Math.round(disc));
         } else {
-          setDiscountAmount(appliedCoupon.discountValue);
+          setDiscountAmount(Math.min(appliedCoupon.discountValue, currentSubtotal));
         }
       }
+    } else if (!userDismissedCouponRef.current) {
+      // Auto-apply best eligible coupon if conditions are met
+      getAutoApplicableCoupon(currentSubtotal).then((res) => {
+        if (res && res.valid && res.coupon) {
+          setAppliedCoupon(res.coupon);
+          setDiscountAmount(res.discountAmount);
+        }
+      });
     }
-  }, [items, appliedCoupon]);
+  }, [items, isLoaded, appliedCoupon]);
 
   const itemCount = useMemo(
     () => items.reduce((sum, item) => sum + item.quantity, 0),
@@ -203,6 +224,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const res = await validateCoupon(code, subtotal);
     if (res.valid && res.coupon) {
+      userDismissedCouponRef.current = false;
       setAppliedCoupon(res.coupon);
       setDiscountAmount(res.discountAmount);
       return { success: true, message: res.message };
@@ -211,6 +233,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const removeCoupon = () => {
+    userDismissedCouponRef.current = true;
     setAppliedCoupon(null);
     setDiscountAmount(0);
   };

@@ -119,11 +119,59 @@ export async function validateCoupon(code: string, subtotal: number): Promise<Co
   };
 }
 
+/**
+ * Finds the best active auto-applicable coupon for a given cart subtotal
+ */
+export async function getAutoApplicableCoupon(subtotal: number): Promise<CouponValidationResult | null> {
+  const coupons = await getCoupons();
+  const now = new Date();
+
+  // Filter valid auto-apply coupons
+  const candidates = coupons.filter((c) => {
+    if (!c.active || !c.autoApply) return false;
+    if (c.expiryDate && new Date(c.expiryDate) < now) return false;
+    if (c.startDate && new Date(c.startDate) > now) return false;
+    if (c.minOrderValue && subtotal < c.minOrderValue) return false;
+    if (c.usageLimit && c.usageCount >= c.usageLimit) return false;
+    return true;
+  });
+
+  if (candidates.length === 0) return null;
+
+  // Calculate discount for each candidate and pick the best savings
+  let bestCoupon: Coupon | null = null;
+  let maxDiscount = 0;
+
+  for (const c of candidates) {
+    let disc = 0;
+    if (c.discountType === "percentage") {
+      disc = Math.round((subtotal * c.discountValue) / 100);
+      if (c.maxDiscount && disc > c.maxDiscount) disc = c.maxDiscount;
+    } else {
+      disc = Math.min(c.discountValue, subtotal);
+    }
+
+    if (disc > maxDiscount) {
+      maxDiscount = disc;
+      bestCoupon = c;
+    }
+  }
+
+  if (!bestCoupon || maxDiscount <= 0) return null;
+
+  return {
+    valid: true,
+    coupon: bestCoupon,
+    discountAmount: maxDiscount,
+    message: `Auto-applied: ${bestCoupon.code} (Saved ₹${maxDiscount})`,
+  };
+}
+
 export async function saveCoupon(coupon: Partial<Coupon> & { id?: string }): Promise<Coupon> {
   const id = coupon.id || `cpn_${Date.now()}`;
   const fullCoupon: Coupon = {
     id,
-    code: (coupon.code || "SAVE10").toUpperCase(),
+    code: (coupon.code || "SAVE10").toUpperCase().trim(),
     discountType: coupon.discountType || "percentage",
     discountValue: coupon.discountValue ?? 10,
     minOrderValue: coupon.minOrderValue ?? 0,
@@ -133,6 +181,11 @@ export async function saveCoupon(coupon: Partial<Coupon> & { id?: string }): Pro
     usageLimit: coupon.usageLimit ?? 1000,
     usageCount: coupon.usageCount ?? 0,
     active: coupon.active ?? true,
+    autoApply: coupon.autoApply ?? false,
+    description: coupon.description || "",
+    applicableCategories: coupon.applicableCategories || [],
+    createdAt: coupon.createdAt || new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   };
 
   if (typeof window !== "undefined") {

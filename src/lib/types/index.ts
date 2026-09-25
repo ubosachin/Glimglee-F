@@ -159,6 +159,11 @@ export interface Coupon {
   usageLimit: number;
   usageCount: number;
   active: boolean;
+  autoApply?: boolean;
+  description?: string;
+  applicableCategories?: string[];
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface Banner {
@@ -191,18 +196,53 @@ export interface Review {
   createdAt: string;
 }
 
-export type UserRole = "CUSTOMER" | "ADMIN";
+export type UserRole = "CUSTOMER" | "ADMIN" | "MANAGER";
 
 export interface UserProfile {
   uid: string;
   email: string;
   displayName: string;
   phoneNumber?: string;
+  photoURL?: string;
   role: UserRole;
   addresses?: ShippingAddress[];
   totalOrders: number;
   totalSpend: number;
   status: "active" | "disabled";
+  notes?: string;
+  lastLoginAt?: string;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface BroadcastProductItem {
+  id: string;
+  name: string;
+  price: number;
+  compareAtPrice?: number;
+  image: string;
+  slug: string;
+}
+
+export interface EmailBroadcast {
+  id: string;
+  subject: string;
+  preheader?: string;
+  badge?: string;
+  heading: string;
+  bodyText: string;
+  heroImageUrl?: string;
+  featuredProducts?: BroadcastProductItem[];
+  promoCouponCode?: string;
+  ctaText?: string;
+  ctaLink?: string;
+  senderName?: string;
+  senderEmail?: string;
+  recipientCount?: number;
+  successCount?: number;
+  failureCount?: number;
+  status: "draft" | "sent" | "failed";
+  sentAt?: string;
   createdAt: string;
 }
 

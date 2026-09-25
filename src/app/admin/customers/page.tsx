@@ -68,15 +68,24 @@ export default function AdminCustomersPage() {
           </p>
         </div>
 
-        <div className="relative w-full sm:w-64">
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by name or email..."
-            className="w-full text-xs bg-white pl-8 pr-3 py-2 rounded-xl border border-stone-200 outline-none"
-          />
-          <Search className="w-3.5 h-3.5 text-stone-400 absolute left-2.5 top-2.5" />
+        <div className="flex items-center gap-2.5 flex-wrap">
+          <div className="relative w-full sm:w-60">
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search by name or email..."
+              className="w-full text-xs bg-white pl-8 pr-3 py-2 rounded-xl border border-stone-200 outline-none"
+            />
+            <Search className="w-3.5 h-3.5 text-stone-400 absolute left-2.5 top-2.5" />
+          </div>
+
+          <a
+            href="/admin/users"
+            className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs flex items-center gap-1.5 transition-colors shadow-sm"
+          >
+            <span>User Management & Roles →</span>
+          </a>
         </div>
       </div>
 
