@@ -188,9 +188,9 @@ export default function AdminLayout({
   }
 
   return (
-    <div className="min-h-screen bg-[#f8f7f4] flex flex-col lg:flex-row font-sans antialiased text-stone-900">
+    <div className="min-h-screen bg-[#f8f7f4] flex flex-col font-sans antialiased text-stone-900">
       {/* Mobile / Tablet Top Header Bar */}
-      <header className="lg:hidden bg-stone-950 text-white px-4 py-3 flex items-center justify-between sticky top-0 z-50 shadow-md border-b border-stone-800/80">
+      <header className="lg:hidden bg-stone-950 text-white px-4 py-3 flex items-center justify-between sticky top-0 z-40 shadow-md border-b border-stone-800/80">
         <div className="flex items-center gap-3">
           <button
             onClick={() => setSidebarOpen(true)}
@@ -224,17 +224,17 @@ export default function AdminLayout({
         />
       )}
 
-      {/* Sidebar (Desktop + Mobile slideout) */}
+      {/* Sidebar (Desktop Fixed + Mobile slideout) */}
       <aside
-        className={`fixed lg:sticky top-0 inset-y-0 left-0 z-50 h-[100dvh] max-h-[100dvh] bg-stone-950 text-stone-300 flex flex-col justify-between transition-all duration-200 border-r border-stone-800/80 ${
+        className={`fixed top-0 inset-y-0 left-0 z-50 h-screen max-h-screen bg-stone-950 text-stone-300 flex flex-col justify-between transition-all duration-200 border-r border-stone-800/80 ${
           collapsed ? "lg:w-20" : "lg:w-64"
         } w-[84vw] sm:w-72 ${
           sidebarOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full lg:translate-x-0"
         }`}
       >
-        <div className="p-4 flex-1 overflow-y-auto overflow-x-hidden">
-          {/* Brand & Badge + Collapse Toggle */}
-          <div className="flex items-center justify-between pb-4 border-b border-stone-800/80">
+        {/* Pinned Top Brand Header */}
+        <div className="p-4 pb-3 border-b border-stone-800/80 flex-shrink-0">
+          <div className="flex items-center justify-between">
             {!collapsed ? (
               <Link href="/admin/dashboard" className="flex flex-col">
                 <div className="flex items-center gap-1.5">
@@ -275,9 +275,11 @@ export default function AdminLayout({
               )}
             </button>
           </div>
+        </div>
 
-          {/* Navigation Links */}
-          <nav className="mt-5 space-y-5">
+        {/* Scrollable Navigation Links */}
+        <div className="p-4 pt-3 flex-1 overflow-y-auto overflow-x-hidden">
+          <nav className="space-y-4">
             {navItems.map((item, idx) => {
               if (item.href) {
                 const Icon = item.icon!;
@@ -337,7 +339,7 @@ export default function AdminLayout({
         </div>
 
         {/* Admin Footer & Profile */}
-        <div className="p-3 sm:p-4 border-t border-stone-800/80 bg-stone-900/60 space-y-2">
+        <div className="p-3 sm:p-4 border-t border-stone-800/80 bg-stone-900/60 space-y-2 flex-shrink-0">
           {!collapsed ? (
             <>
               <div className="flex items-center justify-between text-xs">
@@ -389,10 +391,16 @@ export default function AdminLayout({
         </div>
       </aside>
 
-      {/* Main Content Area */}
-      <main className="flex-1 min-w-0 p-3 sm:p-5 lg:p-6 xl:p-8 w-full max-w-[1600px] mx-auto">
-        {children}
-      </main>
+      {/* Main Content Area Wrapper */}
+      <div
+        className={`flex-1 flex flex-col min-w-0 min-h-screen transition-all duration-200 ${
+          collapsed ? "lg:pl-20" : "lg:pl-64"
+        }`}
+      >
+        <main className="flex-1 min-w-0 p-3 sm:p-5 lg:p-6 xl:p-8 w-full max-w-[1600px] mx-auto">
+          {children}
+        </main>
+      </div>
     </div>
   );
 }
