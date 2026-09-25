@@ -34,6 +34,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: new Date(),
       changeFrequency: "weekly",
       priority: 0.85,
+      images: c.imageUrl ? [c.imageUrl] : undefined,
     }));
 
     productRoutes = products.map((p) => ({
@@ -41,7 +42,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: new Date(p.updatedAt || p.createdAt || Date.now()),
       changeFrequency: "daily",
       priority: 0.95,
-      images: p.images && p.images.length > 0 ? p.images.slice(0, 3) : undefined,
+      images: p.images && p.images.length > 0 ? p.images.slice(0, 5) : undefined,
     }));
   } catch (error) {
     console.error("Failed to generate dynamic sitemap routes:", error);
