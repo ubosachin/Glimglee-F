@@ -344,7 +344,9 @@ export default function AdminProductsPage() {
             {/* Modal Header */}
             <div className="flex items-center justify-between px-5 sm:px-8 py-4 border-b border-stone-100 bg-white flex-shrink-0">
               <h2 className="text-base font-bold text-stone-900">
-                {editingProduct.id.includes("prod-") ? "Edit Gifting Product" : "Create New Gift"}
+                {products.some((p) => p.id === editingProduct.id)
+                  ? `Edit Product: ${editingProduct.name || "Untitled"}`
+                  : "Create New Gift"}
               </h2>
               <button
                 type="button"

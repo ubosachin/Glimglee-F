@@ -32,7 +32,7 @@ export function isHtmlContent(str: string = ""): boolean {
 /**
  * Normalizes description content into clean HTML.
  * If the content already contains HTML tags, returns as is.
- * If it's legacy plain text (e.g. bullet points with -, *, •, or newlines), converts to formatted HTML.
+ * If it's legacy plain text (e.g. bullet points with -, *, •, or newlines, or numbered lists), converts to formatted HTML.
  */
 export function formatDescriptionHtml(raw: string = ""): string {
   if (!raw) return "";
@@ -40,34 +40,73 @@ export function formatDescriptionHtml(raw: string = ""): string {
     return raw;
   }
 
-  // Convert plain text to formatted HTML
-  const lines = raw.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
-  if (lines.length === 0) return "";
+  // Escape HTML characters in plain text
+  const escapeHtml = (str: string) =>
+    str
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
 
-  let inList = false;
+  // Convert plain text to formatted HTML
+  const rawLines = raw.split(/\r?\n/);
+  let inBulletList = false;
+  let inNumberList = false;
   let html = "";
 
-  for (const line of lines) {
-    const isBullet = line.startsWith("•") || line.startsWith("-") || line.startsWith("*");
+  const closeLists = () => {
+    if (inBulletList) {
+      html += "</ul>";
+      inBulletList = false;
+    }
+    if (inNumberList) {
+      html += "</ol>";
+      inNumberList = false;
+    }
+  };
+
+  for (const rawLine of rawLines) {
+    const line = rawLine.trim();
+    if (!line) {
+      closeLists();
+      continue;
+    }
+
+    const isBullet =
+      /^[•\-\*]\s+/.test(line) ||
+      line.startsWith("•") ||
+      line.startsWith("- ") ||
+      line.startsWith("* ");
+    const isNumbered = /^\d+[\.\)]\s+/.test(line);
+
     if (isBullet) {
-      if (!inList) {
-        html += "<ul>";
-        inList = true;
+      if (inNumberList) {
+        html += "</ol>";
+        inNumberList = false;
       }
-      const itemText = line.replace(/^[•\-\*]\s*/, "");
+      if (!inBulletList) {
+        html += "<ul>";
+        inBulletList = true;
+      }
+      const itemText = escapeHtml(line.replace(/^[•\-\*]\s*/, ""));
+      html += `<li>${itemText}</li>`;
+    } else if (isNumbered) {
+      if (inBulletList) {
+        html += "</ul>";
+        inBulletList = false;
+      }
+      if (!inNumberList) {
+        html += "<ol>";
+        inNumberList = true;
+      }
+      const itemText = escapeHtml(line.replace(/^\d+[\.\)]\s*/, ""));
       html += `<li>${itemText}</li>`;
     } else {
-      if (inList) {
-        html += "</ul>";
-        inList = false;
-      }
-      html += `<p>${line}</p>`;
+      closeLists();
+      html += `<p>${escapeHtml(line)}</p>`;
     }
   }
 
-  if (inList) {
-    html += "</ul>";
-  }
-
+  closeLists();
   return html;
 }
+

@@ -21,8 +21,10 @@ import {
   Redo,
   Palette,
   ChevronDown,
+  CheckCircle2,
+  ListPlus,
 } from "lucide-react";
-import { formatDescriptionHtml } from "@/lib/utils/text";
+import { formatDescriptionHtml, isHtmlContent } from "@/lib/utils/text";
 
 interface RichTextEditorProps {
   value: string;
@@ -45,7 +47,7 @@ export function RichTextEditor({
   const editorRef = useRef<HTMLDivElement>(null);
   const isInternalChange = useRef(false);
 
-  // Sync external value with contentEditable without resetting cursor on every keystroke
+  // Sync external value with contentEditable
   useEffect(() => {
     if (editorRef.current && !isInternalChange.current) {
       const currentHtml = editorRef.current.innerHTML;
@@ -55,7 +57,7 @@ export function RichTextEditor({
       }
     }
     isInternalChange.current = false;
-  }, [value]);
+  }, [value, activeTab]);
 
   const handleInput = useCallback(() => {
     if (editorRef.current) {
@@ -70,10 +72,19 @@ export function RichTextEditor({
     }
   }, [onChange]);
 
+  // Tab switcher that maintains DOM sync
+  const switchTab = (tab: "visual" | "html" | "preview") => {
+    if (tab === "visual" && editorRef.current) {
+      const normalized = value ? formatDescriptionHtml(value) : "";
+      editorRef.current.innerHTML = normalized;
+    }
+    setActiveTab(tab);
+  };
+
   // Execute standard formatting commands
   const executeCommand = (command: string, arg: string | undefined = undefined) => {
     if (activeTab !== "visual") {
-      setActiveTab("visual");
+      switchTab("visual");
       setTimeout(() => {
         if (editorRef.current) {
           editorRef.current.focus();
@@ -91,7 +102,7 @@ export function RichTextEditor({
     }
   };
 
-  // Insert custom HTML fragment at current selection
+  // Insert custom HTML fragment at current selection or end
   const insertHtmlFragment = (htmlFragment: string) => {
     if (activeTab !== "visual") {
       onChange((value || "") + "\n" + htmlFragment);
@@ -121,7 +132,7 @@ export function RichTextEditor({
           selection.addRange(newRange);
         }
       } else {
-        // Fallback: append
+        // Fallback append
         editorRef.current.innerHTML += htmlFragment;
       }
       handleInput();
@@ -143,6 +154,25 @@ export function RichTextEditor({
     setShowHighlights(false);
   };
 
+  // Auto-format existing unformatted text into bullet points
+  const autoFormatIntoPoints = () => {
+    if (!value || !value.trim()) return;
+    const cleanText = value
+      .replace(/<[^>]+>/g, "\n")
+      .split("\n")
+      .map((l) => l.trim())
+      .filter(Boolean);
+
+    if (cleanText.length > 0) {
+      const bulletListHtml = `<ul>${cleanText.map((item) => `<li>${item}</li>`).join("")}</ul>`;
+      onChange(bulletListHtml);
+      if (editorRef.current) {
+        editorRef.current.innerHTML = bulletListHtml;
+      }
+    }
+    setShowTemplates(false);
+  };
+
   // Keyboard shortcut listener
   const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
     if (e.metaKey || e.ctrlKey) {
@@ -159,29 +189,37 @@ export function RichTextEditor({
     }
   };
 
-  // Calculate words and characters
+  // Calculate stats
   const plainText = (value || "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
   const wordCount = plainText ? plainText.split(" ").length : 0;
   const charCount = plainText.length;
+  const hasExistingContent = Boolean(value && value.trim().length > 0);
 
   return (
     <div className="w-full space-y-1.5">
-      {/* Top Header Label & Mode Tabs */}
+      {/* Top Header Label, Badges & Mode Tabs */}
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <label className="block text-xs font-bold text-stone-700 tracking-wide uppercase">
             {label}
           </label>
-          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-rose-50 text-rose-700 border border-rose-100">
-            Rich Formatter
-          </span>
+          {hasExistingContent ? (
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+              <CheckCircle2 className="w-2.5 h-2.5 text-emerald-600" />
+              Existing Content Loaded
+            </span>
+          ) : (
+            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-rose-50 text-rose-700 border border-rose-100">
+              Rich Formatter
+            </span>
+          )}
         </div>
 
         {/* Mode Switcher Tabs */}
         <div className="flex items-center bg-stone-100 p-0.5 rounded-lg text-xs font-medium border border-stone-200/80">
           <button
             type="button"
-            onClick={() => setActiveTab("visual")}
+            onClick={() => switchTab("visual")}
             className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md transition-all ${
               activeTab === "visual"
                 ? "bg-white text-stone-900 shadow-xs font-bold"
@@ -194,7 +232,7 @@ export function RichTextEditor({
 
           <button
             type="button"
-            onClick={() => setActiveTab("html")}
+            onClick={() => switchTab("html")}
             className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md transition-all ${
               activeTab === "html"
                 ? "bg-white text-stone-900 shadow-xs font-bold"
@@ -207,7 +245,7 @@ export function RichTextEditor({
 
           <button
             type="button"
-            onClick={() => setActiveTab("preview")}
+            onClick={() => switchTab("preview")}
             className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md transition-all ${
               activeTab === "preview"
                 ? "bg-white text-stone-900 shadow-xs font-bold"
@@ -295,11 +333,11 @@ export function RichTextEditor({
 
             <div className="h-5 w-px bg-stone-200 mx-0.5" />
 
-            {/* Points / Lists - Prominently highlighted for user request */}
+            {/* Points / Lists - Primary feature */}
             <div className="flex items-center bg-white border border-rose-200 rounded-lg p-0.5 shadow-2xs">
               <button
                 type="button"
-                title="Bullet Points (Lists)"
+                title="Bullet Points (Unordered list)"
                 onClick={() => executeCommand("insertUnorderedList")}
                 className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-bold text-rose-700 bg-rose-50/70 hover:bg-rose-100 rounded-md transition-colors"
               >
@@ -319,7 +357,7 @@ export function RichTextEditor({
 
             <div className="h-5 w-px bg-stone-200 mx-0.5" />
 
-            {/* Design & Accents: Callout, Divider, Highlights */}
+            {/* Design & Accents */}
             <div className="flex items-center bg-white border border-stone-200 rounded-lg p-0.5 shadow-2xs">
               <button
                 type="button"
@@ -343,7 +381,7 @@ export function RichTextEditor({
               <div className="relative">
                 <button
                   type="button"
-                  title="Badge / Highlight Style"
+                  title="Badge / Highlight Color"
                   onClick={() => setShowHighlights(!showHighlights)}
                   className="flex items-center gap-1 px-2 py-1 text-xs font-medium hover:bg-stone-100 rounded-md transition-colors"
                 >
@@ -385,7 +423,7 @@ export function RichTextEditor({
 
             <div className="h-5 w-px bg-stone-200 mx-0.5" />
 
-            {/* Quick Presets / Templates */}
+            {/* Quick Templates & Conversion Actions */}
             <div className="relative">
               <button
                 type="button"
@@ -393,14 +431,34 @@ export function RichTextEditor({
                 className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-bold text-amber-800 bg-amber-50 border border-amber-200 rounded-lg hover:bg-amber-100 transition-colors shadow-2xs"
               >
                 <Sparkles className="w-3.5 h-3.5 text-amber-600" />
-                <span>Templates</span>
+                <span>Presets & Tools</span>
                 <ChevronDown className="w-3 h-3 text-amber-500" />
               </button>
 
               {showTemplates && (
-                <div className="absolute top-full left-0 mt-1 w-56 bg-white border border-stone-200 rounded-xl shadow-xl p-1.5 z-20 space-y-1">
+                <div className="absolute top-full left-0 mt-1 w-60 bg-white border border-stone-200 rounded-xl shadow-xl p-1.5 z-20 space-y-1">
+                  {hasExistingContent && (
+                    <>
+                      <div className="px-2 py-1 text-[10px] font-bold text-rose-500 uppercase tracking-wider">
+                        Upgrade Old Description
+                      </div>
+                      <button
+                        type="button"
+                        onClick={autoFormatIntoPoints}
+                        className="w-full text-left px-2.5 py-1.5 text-xs rounded-lg bg-rose-50/60 hover:bg-rose-100 text-rose-900 transition-colors flex items-center gap-2"
+                      >
+                        <ListPlus className="w-4 h-4 text-rose-600 flex-shrink-0" />
+                        <div>
+                          <div className="font-bold">Convert Lines to Points</div>
+                          <div className="text-[10px] text-rose-600/80">Turn text into bullet list</div>
+                        </div>
+                      </button>
+                      <div className="h-px bg-stone-100 my-1" />
+                    </>
+                  )}
+
                   <div className="px-2 py-1 text-[10px] font-bold text-stone-400 uppercase tracking-wider">
-                    Quick Insert Blocks
+                    Quick Templates
                   </div>
                   <button
                     type="button"
@@ -475,73 +533,72 @@ export function RichTextEditor({
           </div>
         )}
 
-        {/* TAB 1: Visual WYSIWYG Editor */}
-        {activeTab === "visual" && (
-          <div className="relative p-3.5">
+        {/* TAB 1: Visual WYSIWYG Editor (Kept mounted with CSS visibility for state preservation) */}
+        <div className={`relative p-3.5 ${activeTab === "visual" ? "block" : "hidden"}`}>
+          <div
+            ref={editorRef}
+            contentEditable
+            onInput={handleInput}
+            onKeyDown={handleKeyDown}
+            className="prose-glimglee outline-none min-h-[160px] text-stone-800 text-sm focus:outline-none"
+            style={{ minHeight }}
+            data-placeholder={placeholder}
+          />
+          {/* Visual Placeholder when empty */}
+          {(!value || value.trim() === "" || value === "<p><br></p>") && (
             <div
-              ref={editorRef}
-              contentEditable
-              onInput={handleInput}
-              onKeyDown={handleKeyDown}
-              className="prose-glimglee outline-none min-h-[160px] text-stone-800 text-sm focus:outline-none"
-              style={{ minHeight }}
-              data-placeholder={placeholder}
-            />
-            {/* Visual Placeholder when empty */}
-            {(!value || value.trim() === "" || value === "<p><br></p>") && (
-              <div
-                onClick={() => editorRef.current?.focus()}
-                className="absolute top-3.5 left-3.5 text-stone-400 text-sm pointer-events-none italic select-none"
-              >
-                {placeholder}
-              </div>
-            )}
-          </div>
-        )}
+              onClick={() => editorRef.current?.focus()}
+              className="absolute top-3.5 left-3.5 text-stone-400 text-sm pointer-events-none italic select-none"
+            >
+              {placeholder}
+            </div>
+          )}
+        </div>
 
         {/* TAB 2: HTML Source Code View */}
-        {activeTab === "html" && (
-          <div className="p-3 bg-stone-900 text-stone-100">
-            <div className="text-[10px] uppercase font-mono text-stone-400 mb-2 flex items-center justify-between">
-              <span>Direct HTML Source Editor</span>
-              <span className="text-amber-400">Edits update in real-time</span>
-            </div>
-            <textarea
-              rows={8}
-              value={value || ""}
-              onChange={(e) => onChange(e.target.value)}
-              className="w-full bg-transparent font-mono text-xs text-rose-200 leading-relaxed outline-none resize-y"
-              style={{ minHeight }}
-              placeholder="<p>Enter raw HTML tags here...</p>"
-            />
+        <div className={`p-3 bg-stone-900 text-stone-100 ${activeTab === "html" ? "block" : "hidden"}`}>
+          <div className="text-[10px] uppercase font-mono text-stone-400 mb-2 flex items-center justify-between">
+            <span>Direct HTML Source Editor</span>
+            <span className="text-amber-400">Edits update in real-time</span>
           </div>
-        )}
+          <textarea
+            rows={8}
+            value={value || ""}
+            onChange={(e) => {
+              onChange(e.target.value);
+              if (editorRef.current) {
+                editorRef.current.innerHTML = formatDescriptionHtml(e.target.value);
+              }
+            }}
+            className="w-full bg-transparent font-mono text-xs text-rose-200 leading-relaxed outline-none resize-y"
+            style={{ minHeight }}
+            placeholder="<p>Enter raw HTML tags here...</p>"
+          />
+        </div>
 
         {/* TAB 3: Storefront Live Preview */}
-        {activeTab === "preview" && (
-          <div className="p-4 bg-[#fdfcfb] border-t border-stone-100">
-            <div className="flex items-center justify-between pb-2 mb-3 border-b border-stone-200/80">
-              <span className="text-[11px] font-bold text-stone-500 uppercase tracking-wider flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                Live Customer Storefront Simulation
-              </span>
-              <span className="text-[10px] text-stone-400 font-medium">
-                Rendered exactly as buyers see it
-              </span>
-            </div>
-
-            {value && value.trim() ? (
-              <div
-                className="prose-glimglee bg-white p-4 rounded-xl border border-stone-200/60 shadow-2xs"
-                dangerouslySetInnerHTML={{ __html: formatDescriptionHtml(value) }}
-              />
-            ) : (
-              <div className="py-8 text-center text-stone-400 text-xs italic">
-                No description added yet. Switch to Visual mode to add text, points, and styling.
-              </div>
-            )}
+        <div className={`p-4 bg-[#fdfcfb] border-t border-stone-100 ${activeTab === "preview" ? "block" : "hidden"}`}>
+          <div className="flex items-center justify-between pb-2 mb-3 border-b border-stone-200/80">
+            <span className="text-[11px] font-bold text-stone-500 uppercase tracking-wider flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-emerald-500" />
+              Live Customer Storefront Simulation
+            </span>
+            <span className="text-[10px] text-stone-400 font-medium">
+              Rendered exactly as buyers see it
+            </span>
           </div>
-        )}
+
+          {value && value.trim() ? (
+            <div
+              className="prose-glimglee bg-white p-4 rounded-xl border border-stone-200/60 shadow-2xs"
+              dangerouslySetInnerHTML={{ __html: formatDescriptionHtml(value) }}
+            />
+          ) : (
+            <div className="py-8 text-center text-stone-400 text-xs italic">
+              No description added yet. Switch to Visual mode to add text, points, and styling.
+            </div>
+          )}
+        </div>
 
         {/* Bottom Status & Helpful Tips Bar */}
         <div className="px-3 py-2 bg-stone-50/80 border-t border-stone-100 flex flex-wrap items-center justify-between gap-2 text-[11px] text-stone-500">
@@ -552,10 +609,15 @@ export function RichTextEditor({
             <span>
               Characters: <strong className="text-stone-700">{charCount}</strong>
             </span>
+            {hasExistingContent && (
+              <span className="text-emerald-700 font-medium hidden sm:inline">
+                • Ready to edit or add points
+              </span>
+            )}
           </div>
 
           <div className="text-stone-400 hidden sm:block">
-            💡 Tip: Click <strong className="text-rose-600 font-bold">Points</strong> for bullet lists or use Ctrl+B for bold
+            💡 Select any text to make it <strong className="text-stone-700">Bold</strong>, click <strong className="text-rose-600 font-bold">Points</strong> for lists, or use Presets
           </div>
         </div>
       </div>
