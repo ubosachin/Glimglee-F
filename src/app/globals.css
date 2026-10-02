@@ -89,3 +89,150 @@
 ::-webkit-scrollbar-thumb:hover {
   background: #a8a29e;
 }
+
+/* Glimglee Rich Product Description & Editor Styles */
+.prose-glimglee {
+  color: #44403c;
+  line-height: 1.7;
+  font-size: 0.875rem;
+}
+
+.prose-glimglee p {
+  margin-top: 0.45rem;
+  margin-bottom: 0.45rem;
+}
+
+.prose-glimglee p:first-child {
+  margin-top: 0;
+}
+
+.prose-glimglee p:last-child {
+  margin-bottom: 0;
+}
+
+.prose-glimglee strong,
+.prose-glimglee b {
+  font-weight: 700;
+  color: #1c1917;
+}
+
+.prose-glimglee em,
+.prose-glimglee i {
+  font-style: italic;
+}
+
+.prose-glimglee u {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.prose-glimglee s,
+.prose-glimglee strike {
+  text-decoration: line-through;
+  opacity: 0.8;
+}
+
+.prose-glimglee h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1c1917;
+  margin-top: 1rem;
+  margin-bottom: 0.4rem;
+  letter-spacing: -0.01em;
+}
+
+.prose-glimglee h4 {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #292524;
+  margin-top: 0.75rem;
+  margin-bottom: 0.25rem;
+}
+
+.prose-glimglee ul {
+  list-style-type: none;
+  padding-left: 0;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.prose-glimglee ul > li {
+  position: relative;
+  padding-left: 1.35rem;
+  line-height: 1.6;
+}
+
+.prose-glimglee ul > li::before {
+  content: "";
+  position: absolute;
+  left: 0.25rem;
+  top: 0.55rem;
+  width: 0.375rem;
+  height: 0.375rem;
+  border-radius: 9999px;
+  background-color: #e11d48;
+}
+
+.prose-glimglee ol {
+  list-style-type: decimal;
+  padding-left: 1.4rem;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.prose-glimglee ol > li {
+  padding-left: 0.25rem;
+  line-height: 1.6;
+}
+
+.prose-glimglee blockquote {
+  border-left: 3px solid #e11d48;
+  background: linear-gradient(to right, #fff1f2, #faf8f5);
+  padding: 0.65rem 0.9rem;
+  border-radius: 0 0.75rem 0.75rem 0;
+  margin-top: 0.75rem;
+  margin-bottom: 0.75rem;
+  color: #881337;
+  font-style: italic;
+  font-size: 0.8125rem;
+}
+
+.prose-glimglee hr {
+  border: 0;
+  border-top: 1px dashed #e7e5e4;
+  margin: 1rem 0;
+}
+
+.prose-glimglee .hl-rose {
+  background-color: #ffe4e6;
+  color: #9f1239;
+  padding: 0.1rem 0.4rem;
+  border-radius: 0.375rem;
+  font-weight: 600;
+  font-size: 0.9em;
+}
+
+.prose-glimglee .hl-amber {
+  background-color: #fef3c7;
+  color: #92400e;
+  padding: 0.1rem 0.4rem;
+  border-radius: 0.375rem;
+  font-weight: 600;
+  font-size: 0.9em;
+}
+
+.prose-glimglee .hl-emerald {
+  background-color: #d1fae5;
+  color: #065f46;
+  padding: 0.1rem 0.4rem;
+  border-radius: 0.375rem;
+  font-weight: 600;
+  font-size: 0.9em;
+}
+

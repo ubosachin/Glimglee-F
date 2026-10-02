@@ -7,6 +7,7 @@ import { Product } from "@/lib/types";
 import { useCart } from "@/lib/cart/CartContext";
 import { useWishlist } from "@/lib/wishlist/WishlistContext";
 import { useToast } from "@/components/ui/Toast";
+import { ProductDescription } from "@/components/product/ProductDescription";
 import { X, Star, Heart, ShoppingBag, ArrowRight, Sparkles, Check } from "lucide-react";
 
 interface QuickViewModalProps {
@@ -131,9 +132,11 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({ product, onClose
                 )}
               </div>
 
-              <p className="text-xs text-stone-600 mt-4 leading-relaxed line-clamp-4">
-                {product.description}
-              </p>
+              <ProductDescription
+                content={product.description}
+                clampLines={4}
+                className="mt-4"
+              />
             </div>
 
             <div className="mt-6 pt-4 border-t border-stone-100 space-y-3">

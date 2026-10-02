@@ -12,6 +12,7 @@ import { useWishlist } from "@/lib/wishlist/WishlistContext";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { useToast } from "@/components/ui/Toast";
 import { ProductSection } from "@/components/product/ProductSection";
+import { ProductDescription } from "@/components/product/ProductDescription";
 import { Container } from "@/components/ui/Container";
 import { ProductPageSkeleton } from "@/components/ui/LoadingSkeletons";
 import { uploadCustomizationPhoto } from "@/lib/storage/upload";
@@ -320,7 +321,7 @@ export default function ProductDetailPage() {
                 </button>
                 {openAccordion === "details" && (
                   <div className="p-4 sm:p-5 pt-0 text-xs sm:text-sm text-stone-600 leading-relaxed space-y-3 bg-[#fdfcfb]">
-                    <p>{product.description}</p>
+                    <ProductDescription content={product.description} />
                     <p className="text-xs text-stone-400 font-mono">SKU: {product.sku}</p>
                   </div>
                 )}

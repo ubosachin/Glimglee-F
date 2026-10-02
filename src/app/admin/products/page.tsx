@@ -8,6 +8,7 @@ import { Product, Category, PersonalizationField } from "@/lib/types";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { useToast } from "@/components/ui/Toast";
 import ImageUpload from "@/components/ui/ImageUpload";
+import RichTextEditor from "@/components/ui/RichTextEditor";
 import {
   Plus,
   Search,
@@ -454,12 +455,16 @@ export default function AdminProductsPage() {
                 </div>
 
                 <div className="sm:col-span-2">
-                  <label className="block font-bold text-stone-700 mb-1">Description</label>
-                  <textarea
-                    rows={3}
-                    value={editingProduct.description}
-                    onChange={(e) => setEditingProduct({ ...editingProduct, description: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl border border-stone-200 outline-none focus:ring-1 focus:ring-rose-500"
+                  <RichTextEditor
+                    label="Product Description & Story"
+                    placeholder="Describe product highlights, sensory notes, points, dimensions, care advice..."
+                    value={editingProduct.description || ""}
+                    onChange={(val) =>
+                      setEditingProduct({
+                        ...editingProduct,
+                        description: val,
+                      })
+                    }
                   />
                 </div>
               </div>

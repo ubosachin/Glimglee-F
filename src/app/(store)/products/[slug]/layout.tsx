@@ -2,6 +2,7 @@ import React from "react";
 import type { Metadata } from "next";
 import { getProductBySlug } from "@/lib/services/products";
 import { SITE_URL } from "@/lib/config/site";
+import { stripHtml } from "@/lib/utils/text";
 
 interface ProductLayoutProps {
   children: React.ReactNode;
@@ -28,9 +29,10 @@ export async function generateMetadata({
     }
 
     const title = `${product.name} — Buy Online | Glimglee Personalized Gifts`;
+    const rawCleanDesc = stripHtml(product.description || "");
     const description =
       product.shortDescription ||
-      product.description?.slice(0, 160) ||
+      (rawCleanDesc ? rawCleanDesc.slice(0, 160) : "") ||
       `Buy ${product.name} online at Glimglee. Handcrafted personalized gifting with luxury gift box packaging and fast pan-India express delivery.`;
 
     const canonicalUrl = `${siteUrl}/products/${product.slug}`;
@@ -109,7 +111,7 @@ export default async function ProductLayout({
         name: product.name,
         description:
           product.shortDescription ||
-          product.description?.slice(0, 300) ||
+          (product.description ? stripHtml(product.description).slice(0, 300) : "") ||
           product.name,
         image: product.images && product.images.length > 0 ? product.images : [`${siteUrl}/opengraph-image`],
         sku: product.id,
