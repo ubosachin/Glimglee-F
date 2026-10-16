@@ -15,6 +15,7 @@ import {
   Truck,
   ArrowLeft,
 } from "lucide-react";
+import { CouponApplySection } from "@/components/cart/CouponApplySection";
 
 export default function CartPage() {
   const {
@@ -35,21 +36,6 @@ export default function CartPage() {
     freeShippingProgress,
     isLoaded,
   } = useCart();
-
-  const [couponCode, setCouponCode] = useState("");
-  const [couponMsg, setCouponMsg] = useState("");
-  const [couponLoading, setCouponLoading] = useState(false);
-
-  const handleApply = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!couponCode.trim()) return;
-    setCouponLoading(true);
-    setCouponMsg("");
-    const res = await applyCouponCode(couponCode.trim());
-    setCouponLoading(false);
-    setCouponMsg(res.message);
-    if (res.success) setCouponCode("");
-  };
 
   if (!isLoaded) {
     return (
@@ -241,40 +227,13 @@ export default function CartPage() {
             </h3>
 
             {/* Coupon Box */}
-            <div>
-              {appliedCoupon ? (
-                <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-xs flex items-center justify-between">
-                  <div>
-                    <span className="font-bold text-emerald-800">Coupon {appliedCoupon.code}</span>
-                    <p className="text-[11px] text-emerald-600">Saved ₹{discountAmount} on your gifts</p>
-                  </div>
-                  <button
-                    onClick={removeCoupon}
-                    className="text-emerald-700 underline font-bold text-[11px]"
-                  >
-                    Remove
-                  </button>
-                </div>
-              ) : (
-                <form onSubmit={handleApply} className="flex gap-2">
-                  <input
-                    type="text"
-                    value={couponCode}
-                    onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-                    placeholder="Coupon (e.g. GLOW10)"
-                    className="flex-1 text-xs px-3 py-2.5 rounded-xl border border-stone-200 outline-none uppercase font-bold"
-                  />
-                  <button
-                    type="submit"
-                    disabled={couponLoading}
-                    className="px-4 py-2.5 bg-stone-900 text-white rounded-xl text-xs font-bold hover:bg-stone-800 transition-colors"
-                  >
-                    {couponLoading ? "..." : "Apply"}
-                  </button>
-                </form>
-              )}
-              {couponMsg && <p className="text-[11px] text-stone-600 mt-1">{couponMsg}</p>}
-            </div>
+            <CouponApplySection
+              appliedCoupon={appliedCoupon}
+              discountAmount={discountAmount}
+              subtotal={subtotal}
+              applyCouponCode={applyCouponCode}
+              removeCoupon={removeCoupon}
+            />
 
             {/* Calculations breakdown */}
             <div className="space-y-2 text-xs text-stone-600 pt-2 border-t border-stone-100">

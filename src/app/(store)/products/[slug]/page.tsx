@@ -13,6 +13,7 @@ import { useAuth } from "@/lib/auth/AuthContext";
 import { useToast } from "@/components/ui/Toast";
 import { ProductSection } from "@/components/product/ProductSection";
 import { ProductDescription } from "@/components/product/ProductDescription";
+import { ProductOffersCard } from "@/components/product/ProductOffersCard";
 import { Container } from "@/components/ui/Container";
 import { ProductPageSkeleton } from "@/components/ui/LoadingSkeletons";
 import { uploadCustomizationPhoto } from "@/lib/storage/upload";
@@ -663,6 +664,9 @@ export default function ProductDetailPage() {
                 </button>
               </div>
             </div>
+
+            {/* Special Offers & Promo Codes Widget */}
+            <ProductOffersCard />
 
             {/* Delivery Pincode Checker */}
             <div className="p-4 rounded-2xl bg-stone-50 border border-stone-200 text-xs space-y-2">

@@ -24,11 +24,23 @@ import {
 } from "lucide-react";
 import { Container } from "@/components/ui/Container";
 import { loadCashfreeCheckout } from "@/lib/payment/cashfree-client";
+import { CouponApplySection } from "@/components/cart/CouponApplySection";
 
 function CheckoutContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { items, subtotal, discountAmount, giftWrapFee, total, appliedCoupon, clearCart, isLoaded } = useCart();
+  const {
+    items,
+    subtotal,
+    discountAmount,
+    giftWrapFee,
+    total,
+    appliedCoupon,
+    applyCouponCode,
+    removeCoupon,
+    clearCart,
+    isLoaded,
+  } = useCart();
   const { user } = useAuth();
   const { toast } = useToast();
 
@@ -635,6 +647,19 @@ function CheckoutContent() {
             <h3 className="text-xs font-bold text-stone-900 uppercase tracking-wider">
               Payment Summary
             </h3>
+
+            {/* Coupon Box on Checkout */}
+            <div className="pb-3 border-b border-stone-100">
+              <span className="text-[11px] font-bold text-stone-700 block mb-1.5">Have a Coupon or Gift Code?</span>
+              <CouponApplySection
+                appliedCoupon={appliedCoupon}
+                discountAmount={discountAmount}
+                subtotal={subtotal}
+                applyCouponCode={applyCouponCode}
+                removeCoupon={removeCoupon}
+                compact
+              />
+            </div>
 
             <div className="space-y-2 text-xs text-stone-600">
               <div className="flex justify-between">

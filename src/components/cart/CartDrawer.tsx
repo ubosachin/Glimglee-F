@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useCart } from "@/lib/cart/CartContext";
 import { X, Plus, Minus, Trash2, Gift, Sparkles, ArrowRight, ShieldCheck } from "lucide-react";
+import { CouponApplySection } from "./CouponApplySection";
 
 export const CartDrawer: React.FC = () => {
   const {
@@ -26,25 +27,7 @@ export const CartDrawer: React.FC = () => {
     freeShippingProgress,
   } = useCart();
 
-  const [couponInput, setCouponInput] = useState("");
-  const [couponError, setCouponError] = useState("");
-  const [couponLoading, setCouponLoading] = useState(false);
-
   if (!isCartOpen) return null;
-
-  const handleApplyCoupon = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!couponInput.trim()) return;
-    setCouponLoading(true);
-    setCouponError("");
-    const res = await applyCouponCode(couponInput.trim());
-    setCouponLoading(false);
-    if (!res.success) {
-      setCouponError(res.message);
-    } else {
-      setCouponInput("");
-    }
-  };
 
   return (
     <div className="fixed inset-0 z-[100] flex justify-end">
@@ -213,42 +196,14 @@ export const CartDrawer: React.FC = () => {
         {items.length > 0 && (
           <div className="p-4 sm:p-5 border-t border-stone-100 bg-[#fdfcfb] space-y-3 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
             {/* Promo Code Form */}
-            <div>
-              {appliedCoupon ? (
-                <div className="flex items-center justify-between p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-xs">
-                  <div className="flex items-center gap-1.5 text-emerald-800">
-                    <Sparkles className="w-4 h-4 text-emerald-600" />
-                    <span>
-                      Coupon <strong>{appliedCoupon.code}</strong> applied (-₹{discountAmount})
-                    </span>
-                  </div>
-                  <button
-                    onClick={removeCoupon}
-                    className="text-emerald-700 hover:text-emerald-900 font-bold ml-2 underline text-[11px]"
-                  >
-                    Remove
-                  </button>
-                </div>
-              ) : (
-                <form onSubmit={handleApplyCoupon} className="flex gap-2">
-                  <input
-                    type="text"
-                    value={couponInput}
-                    onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
-                    placeholder="Enter Coupon (e.g. GLOW10)"
-                    className="flex-1 text-xs px-3 py-2 rounded-xl border border-stone-200 focus:outline-none focus:ring-1 focus:ring-rose-500 uppercase font-medium"
-                  />
-                  <button
-                    type="submit"
-                    disabled={couponLoading}
-                    className="px-4 py-2 bg-stone-900 text-white rounded-xl text-xs font-semibold hover:bg-stone-800 transition-colors disabled:opacity-50"
-                  >
-                    {couponLoading ? "..." : "Apply"}
-                  </button>
-                </form>
-              )}
-              {couponError && <p className="text-[11px] text-rose-600 mt-1 pl-1">{couponError}</p>}
-            </div>
+            <CouponApplySection
+              appliedCoupon={appliedCoupon}
+              discountAmount={discountAmount}
+              subtotal={subtotal}
+              applyCouponCode={applyCouponCode}
+              removeCoupon={removeCoupon}
+              compact
+            />
 
             {/* Price Breakdown */}
             <div className="space-y-1.5 text-xs text-stone-600 pt-1">

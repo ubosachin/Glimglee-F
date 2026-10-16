@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { getCoupons, saveCoupon, deleteCoupon, logAdminAction } from "@/lib/services/storeDb";
+import { generateCouponCode } from "@/lib/services/coupons";
 import { Coupon } from "@/lib/types";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { useToast } from "@/components/ui/Toast";
@@ -20,6 +21,10 @@ import {
   Search,
   CheckCircle2,
   AlertCircle,
+  TrendingUp,
+  Dices,
+  Eye,
+  Percent,
 } from "lucide-react";
 
 export default function AdminCouponsPage() {
@@ -47,9 +52,9 @@ export default function AdminCouponsPage() {
 
   const handleOpenCreate = () => {
     const newCoupon: Coupon = {
-      id: `coup-${Date.now()}`,
-      code: "",
-      description: "",
+      id: `cpn_${Date.now()}`,
+      code: generateCouponCode("percentage", 15),
+      description: "Get 15% off on handcrafted celebrations",
       discountType: "percentage",
       discountValue: 15,
       minOrderValue: 499,
@@ -65,6 +70,28 @@ export default function AdminCouponsPage() {
     setModalOpen(true);
   };
 
+  const handleGenerateCode = () => {
+    if (!editingCoupon) return;
+    const newCode = generateCouponCode(editingCoupon.discountType, editingCoupon.discountValue);
+    setEditingCoupon({ ...editingCoupon, code: newCode });
+    toast(`Generated code: ${newCode}`, "info");
+  };
+
+  const applyPreset = (preset: {
+    discountType: "percentage" | "fixed";
+    discountValue: number;
+    minOrderValue: number;
+    maxDiscount: number;
+    description: string;
+  }) => {
+    if (!editingCoupon) return;
+    setEditingCoupon({
+      ...editingCoupon,
+      ...preset,
+      code: generateCouponCode(preset.discountType, preset.discountValue),
+    });
+  };
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingCoupon) return;
@@ -76,9 +103,20 @@ export default function AdminCouponsPage() {
 
     setSaving(true);
     try {
+      // Ensure expiry date has end-of-day timestamp if date-only string
+      let normalizedExpiry = editingCoupon.expiryDate;
+      if (normalizedExpiry && /^\d{4}-\d{2}-\d{2}$/.test(normalizedExpiry.trim())) {
+        normalizedExpiry = `${normalizedExpiry.trim()}T23:59:59.999Z`;
+      }
+
       const cleanCoupon = {
         ...editingCoupon,
         code: editingCoupon.code.trim().toUpperCase(),
+        expiryDate: normalizedExpiry,
+        discountValue: Number(editingCoupon.discountValue) || 0,
+        minOrderValue: Number(editingCoupon.minOrderValue) || 0,
+        maxDiscount: Number(editingCoupon.maxDiscount) || 0,
+        usageLimit: Number(editingCoupon.usageLimit) || 1000,
       };
 
       const saved = await saveCoupon(cleanCoupon);
@@ -122,23 +160,32 @@ export default function AdminCouponsPage() {
   };
 
   const now = new Date();
+  const isCouponExpired = (c: Coupon) => {
+    if (!c.expiryDate) return false;
+    const exp = new Date(c.expiryDate.includes("T") ? c.expiryDate : `${c.expiryDate}T23:59:59.999Z`);
+    return exp < now;
+  };
+
   const filteredCoupons = coupons.filter((c) => {
     const matchSearch =
       c.code.toLowerCase().includes(search.toLowerCase()) ||
       (c.description || "").toLowerCase().includes(search.toLowerCase());
 
-    const isExpired = c.expiryDate && new Date(c.expiryDate) < now;
+    const expired = isCouponExpired(c);
 
     if (!matchSearch) return false;
     if (filterTab === "auto") return c.autoApply === true;
     if (filterTab === "manual") return !c.autoApply;
-    if (filterTab === "active") return c.active && !isExpired;
-    if (filterTab === "inactive") return !c.active || isExpired;
+    if (filterTab === "active") return c.active && !expired;
+    if (filterTab === "inactive") return !c.active || expired;
     return true;
   });
 
+  const totalCouponsCount = coupons.length;
+  const activeCount = coupons.filter((c) => c.active && !isCouponExpired(c)).length;
   const autoCount = coupons.filter((c) => c.autoApply).length;
   const manualCount = coupons.filter((c) => !c.autoApply).length;
+  const totalRedemptions = coupons.reduce((sum, c) => sum + (c.usageCount || 0), 0);
 
   return (
     <div className="space-y-6 pb-20">
@@ -147,14 +194,14 @@ export default function AdminCouponsPage() {
         <div>
           <span className="text-xs font-bold text-rose-600 uppercase tracking-widest flex items-center gap-1.5">
             <Ticket className="w-3.5 h-3.5" />
-            Marketing & Growth Promotions
+            Marketing & Discount Engine
           </span>
           <h1 className="text-2xl sm:text-3xl font-black text-stone-900 tracking-tight mt-1">
             Promotional Coupons ({coupons.length})
           </h1>
           <p className="text-xs text-stone-500 mt-1 max-w-2xl leading-relaxed">
-            Create percentage or flat discount vouchers. Choose whether a coupon{" "}
-            <strong>auto-applies automatically in cart/checkout</strong> or requires the customer to enter the code manually.
+            Create percentage discounts or flat cash vouchers. Choose whether a coupon{" "}
+            <strong>auto-applies automatically in cart</strong> or requires the customer to enter the code manually.
           </p>
         </div>
 
@@ -165,6 +212,49 @@ export default function AdminCouponsPage() {
           <Plus className="w-4 h-4" />
           <span>Create New Coupon</span>
         </button>
+      </div>
+
+      {/* KPI Stats Overview Cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <div className="p-4 rounded-2xl bg-white border border-stone-200/80 shadow-xs flex items-center gap-3">
+          <div className="p-3 rounded-xl bg-stone-100 text-stone-700">
+            <Ticket className="w-5 h-5" />
+          </div>
+          <div>
+            <span className="text-[10px] font-bold uppercase text-stone-400 block tracking-wider">Total Coupons</span>
+            <span className="text-xl sm:text-2xl font-black text-stone-900">{totalCouponsCount}</span>
+          </div>
+        </div>
+
+        <div className="p-4 rounded-2xl bg-white border border-stone-200/80 shadow-xs flex items-center gap-3">
+          <div className="p-3 rounded-xl bg-emerald-100 text-emerald-700">
+            <CheckCircle2 className="w-5 h-5" />
+          </div>
+          <div>
+            <span className="text-[10px] font-bold uppercase text-emerald-600 block tracking-wider">Active Deals</span>
+            <span className="text-xl sm:text-2xl font-black text-emerald-900">{activeCount}</span>
+          </div>
+        </div>
+
+        <div className="p-4 rounded-2xl bg-white border border-stone-200/80 shadow-xs flex items-center gap-3">
+          <div className="p-3 rounded-xl bg-purple-100 text-purple-700">
+            <Zap className="w-5 h-5 fill-current" />
+          </div>
+          <div>
+            <span className="text-[10px] font-bold uppercase text-purple-600 block tracking-wider">Auto-Applied</span>
+            <span className="text-xl sm:text-2xl font-black text-purple-900">{autoCount}</span>
+          </div>
+        </div>
+
+        <div className="p-4 rounded-2xl bg-white border border-stone-200/80 shadow-xs flex items-center gap-3">
+          <div className="p-3 rounded-xl bg-amber-100 text-amber-700">
+            <TrendingUp className="w-5 h-5" />
+          </div>
+          <div>
+            <span className="text-[10px] font-bold uppercase text-amber-600 block tracking-wider">Total Redemptions</span>
+            <span className="text-xl sm:text-2xl font-black text-amber-900">{totalRedemptions}</span>
+          </div>
+        </div>
       </div>
 
       {/* Filter Tabs & Search Bar */}
@@ -223,7 +313,7 @@ export default function AdminCouponsPage() {
                 : "bg-stone-100 text-stone-600 hover:bg-stone-200"
             }`}
           >
-            Active
+            Active ({activeCount})
           </button>
           <button
             onClick={() => setFilterTab("inactive")}
@@ -233,7 +323,7 @@ export default function AdminCouponsPage() {
                 : "bg-stone-100 text-stone-600 hover:bg-stone-200"
             }`}
           >
-            Inactive/Expired
+            Inactive / Expired
           </button>
         </div>
       </div>
@@ -241,14 +331,14 @@ export default function AdminCouponsPage() {
       {/* Coupons Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
         {filteredCoupons.map((coupon) => {
-          const isExpired = coupon.expiryDate && new Date(coupon.expiryDate) < now;
+          const expired = isCouponExpired(coupon);
           const isAuto = coupon.autoApply === true;
 
           return (
             <div
               key={coupon.id}
               className={`p-5 rounded-3xl border transition-all flex flex-col justify-between space-y-4 ${
-                !coupon.active || isExpired
+                !coupon.active || expired
                   ? "bg-stone-50 border-stone-200/60 opacity-70"
                   : isAuto
                   ? "bg-gradient-to-br from-purple-50/40 via-white to-white border-purple-200 shadow-xs hover:shadow-md"
@@ -279,13 +369,13 @@ export default function AdminCouponsPage() {
                     <button
                       onClick={() => handleToggleActive(coupon)}
                       className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase transition-colors ${
-                        coupon.active && !isExpired
+                        coupon.active && !expired
                           ? "bg-emerald-100 text-emerald-800 hover:bg-emerald-200"
                           : "bg-stone-200 text-stone-600 hover:bg-stone-300"
                       }`}
                       title="Click to toggle status"
                     >
-                      {isExpired ? "Expired" : coupon.active ? "Active" : "Inactive"}
+                      {expired ? "Expired" : coupon.active ? "Active" : "Inactive"}
                     </button>
                   </div>
                 </div>
@@ -329,14 +419,14 @@ export default function AdminCouponsPage() {
                   </div>
 
                   <div className="bg-stone-50 p-2 rounded-xl">
-                    <span className="text-[9px] uppercase font-bold text-stone-400 block">Max Discount Cap</span>
+                    <span className="text-[9px] uppercase font-bold text-stone-400 block">Max Savings Cap</span>
                     <strong className="text-stone-900 font-bold">
                       {coupon.maxDiscount > 0 ? `₹${coupon.maxDiscount.toLocaleString("en-IN")}` : "No Limit"}
                     </strong>
                   </div>
 
                   <div className="bg-stone-50 p-2 rounded-xl">
-                    <span className="text-[9px] uppercase font-bold text-stone-400 block">Usage Count</span>
+                    <span className="text-[9px] uppercase font-bold text-stone-400 block">Usage Redemptions</span>
                     <strong className="text-stone-900 font-bold">
                       {coupon.usageCount || 0} / {coupon.usageLimit || "∞"}
                     </strong>
@@ -344,7 +434,7 @@ export default function AdminCouponsPage() {
 
                   <div className="bg-stone-50 p-2 rounded-xl">
                     <span className="text-[9px] uppercase font-bold text-stone-400 block">Expiry Date</span>
-                    <strong className={isExpired ? "text-rose-600 font-bold" : "text-stone-900 font-bold"}>
+                    <strong className={expired ? "text-rose-600 font-bold" : "text-stone-900 font-bold"}>
                       {coupon.expiryDate ? new Date(coupon.expiryDate).toLocaleDateString("en-IN") : "Never"}
                     </strong>
                   </div>
@@ -353,7 +443,7 @@ export default function AdminCouponsPage() {
 
               {/* Action Buttons */}
               <div className="pt-3 border-t border-stone-100 flex items-center justify-between text-xs">
-                <span className="text-[10px] text-stone-400">ID: {coupon.id}</span>
+                <span className="text-[10px] text-stone-400 font-mono">ID: {coupon.id}</span>
                 <div className="flex items-center gap-1.5">
                   <button
                     onClick={() => {
@@ -384,7 +474,7 @@ export default function AdminCouponsPage() {
             <Ticket className="w-12 h-12 mx-auto text-stone-300 stroke-[1.5]" />
             <h3 className="text-base font-bold text-stone-800">No Coupons Found</h3>
             <p className="text-xs text-stone-500 max-w-sm mx-auto">
-              Create automatic discounts or promo voucher codes for festivals and celebrations.
+              Create automatic discounts or promotional vouchers for festivals and celebrations.
             </p>
             <button
               onClick={handleOpenCreate}
@@ -401,7 +491,7 @@ export default function AdminCouponsPage() {
       {modalOpen && editingCoupon && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4">
           <div onClick={() => setModalOpen(false)} className="fixed inset-0 bg-stone-900/60 backdrop-blur-sm" />
-          <div className="relative z-10 w-full max-w-xl bg-white rounded-3xl shadow-2xl flex flex-col max-h-[92dvh] overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+          <div className="relative z-10 w-full max-w-2xl bg-white rounded-3xl shadow-2xl flex flex-col max-h-[92dvh] overflow-hidden animate-in fade-in zoom-in-95 duration-150">
             {/* Modal Header */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-stone-100 bg-white flex-shrink-0">
               <div className="flex items-center gap-2.5">
@@ -412,7 +502,7 @@ export default function AdminCouponsPage() {
                   <h3 className="text-base font-bold text-stone-900">
                     {editingCoupon.code ? `Edit Coupon: ${editingCoupon.code}` : "Create Promotional Coupon"}
                   </h3>
-                  <span className="text-[10px] text-stone-400">Configure discount conditions & trigger type</span>
+                  <span className="text-[10px] text-stone-400">Configure discount rules, threshold & customer preview</span>
                 </div>
               </div>
               <button
@@ -426,6 +516,105 @@ export default function AdminCouponsPage() {
             </div>
 
             <form onSubmit={handleSave} className="flex-1 overflow-y-auto px-6 py-5 space-y-4 text-xs">
+              {/* Quick Template Presets */}
+              <div className="p-3 bg-stone-50 rounded-2xl border border-stone-200/70 space-y-1.5">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400 block">
+                  ⚡ Quick Discount Presets:
+                </span>
+                <div className="flex flex-wrap gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      applyPreset({
+                        discountType: "percentage",
+                        discountValue: 10,
+                        minOrderValue: 499,
+                        maxDiscount: 250,
+                        description: "10% OFF on all orders above ₹499",
+                      })
+                    }
+                    className="px-2.5 py-1 bg-white hover:bg-rose-50 border border-stone-200 rounded-lg text-[11px] font-bold text-stone-700 transition-colors"
+                  >
+                    10% (Min ₹499)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      applyPreset({
+                        discountType: "percentage",
+                        discountValue: 15,
+                        minOrderValue: 799,
+                        maxDiscount: 350,
+                        description: "15% OFF on orders above ₹799",
+                      })
+                    }
+                    className="px-2.5 py-1 bg-white hover:bg-rose-50 border border-stone-200 rounded-lg text-[11px] font-bold text-stone-700 transition-colors"
+                  >
+                    15% (Min ₹799)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      applyPreset({
+                        discountType: "percentage",
+                        discountValue: 20,
+                        minOrderValue: 999,
+                        maxDiscount: 500,
+                        description: "20% OFF festive special on orders above ₹999",
+                      })
+                    }
+                    className="px-2.5 py-1 bg-white hover:bg-rose-50 border border-stone-200 rounded-lg text-[11px] font-bold text-stone-700 transition-colors"
+                  >
+                    20% (Min ₹999)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      applyPreset({
+                        discountType: "fixed",
+                        discountValue: 50,
+                        minOrderValue: 299,
+                        maxDiscount: 50,
+                        description: "Flat ₹50 OFF on small celebration gifts",
+                      })
+                    }
+                    className="px-2.5 py-1 bg-white hover:bg-rose-50 border border-stone-200 rounded-lg text-[11px] font-bold text-stone-700 transition-colors"
+                  >
+                    Flat ₹50
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      applyPreset({
+                        discountType: "fixed",
+                        discountValue: 200,
+                        minOrderValue: 1499,
+                        maxDiscount: 200,
+                        description: "Flat ₹200 OFF on celebration hampers",
+                      })
+                    }
+                    className="px-2.5 py-1 bg-white hover:bg-rose-50 border border-stone-200 rounded-lg text-[11px] font-bold text-stone-700 transition-colors"
+                  >
+                    Flat ₹200
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      applyPreset({
+                        discountType: "fixed",
+                        discountValue: 500,
+                        minOrderValue: 2499,
+                        maxDiscount: 500,
+                        description: "Flat ₹500 OFF on luxury celebration hampers",
+                      })
+                    }
+                    className="px-2.5 py-1 bg-white hover:bg-rose-50 border border-stone-200 rounded-lg text-[11px] font-bold text-stone-700 transition-colors"
+                  >
+                    Flat ₹500
+                  </button>
+                </div>
+              </div>
+
               {/* Trigger Mode Selector: Auto vs Manual */}
               <div className="p-3.5 rounded-2xl bg-stone-50 border border-stone-200/80 space-y-2">
                 <label className="block font-bold text-stone-900">How should this coupon apply?</label>
@@ -443,7 +632,7 @@ export default function AdminCouponsPage() {
                     <div>
                       <span className="text-xs block font-bold">⚡ Automatic Apply</span>
                       <span className="text-[10px] text-stone-500 font-normal">
-                        Applies automatically in cart/checkout when condition is met.
+                        Applies automatically in cart/checkout when conditions are met.
                       </span>
                     </div>
                   </button>
@@ -461,21 +650,31 @@ export default function AdminCouponsPage() {
                     <div>
                       <span className="text-xs block font-bold">🎟️ Manual Code Entry</span>
                       <span className="text-[10px] text-stone-500 font-normal">
-                        Customer must type this code and click Apply.
+                        Customer must type or click "Apply" to redeem this code.
                       </span>
                     </div>
                   </button>
                 </div>
               </div>
 
-              {/* Code & Description */}
+              {/* Code & Code Generator */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Coupon Code *</label>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="font-bold text-stone-700">Coupon Code *</label>
+                    <button
+                      type="button"
+                      onClick={handleGenerateCode}
+                      className="text-[10px] font-bold text-rose-600 hover:text-rose-700 flex items-center gap-1"
+                    >
+                      <Dices className="w-3 h-3" />
+                      <span>Generate Code</span>
+                    </button>
+                  </div>
                   <input
                     type="text"
                     required
-                    placeholder="e.g. FESTIVE20, AUTO10"
+                    placeholder="e.g. FESTIVE20, GLOW10"
                     value={editingCoupon.code}
                     onChange={(e) => setEditingCoupon({ ...editingCoupon, code: e.target.value.toUpperCase() })}
                     className="w-full px-3 py-2 rounded-xl border border-stone-200 outline-none uppercase font-mono font-bold text-stone-900 focus:ring-1 focus:ring-rose-500"
@@ -521,7 +720,7 @@ export default function AdminCouponsPage() {
                     type="number"
                     required
                     min="1"
-                    max={editingCoupon.discountType === "percentage" ? "99" : "10000"}
+                    max={editingCoupon.discountType === "percentage" ? "99" : "50000"}
                     value={editingCoupon.discountValue}
                     onChange={(e) => setEditingCoupon({ ...editingCoupon, discountValue: Number(e.target.value) })}
                     className="w-full px-3 py-2 rounded-xl border border-stone-200 font-bold text-stone-900 outline-none focus:ring-1 focus:ring-rose-500"
@@ -543,7 +742,7 @@ export default function AdminCouponsPage() {
                     onChange={(e) => setEditingCoupon({ ...editingCoupon, minOrderValue: Number(e.target.value) })}
                     className="w-full px-3 py-2 rounded-xl border border-stone-200 outline-none focus:ring-1 focus:ring-rose-500"
                   />
-                  <span className="text-[10px] text-stone-400 mt-0.5 block">Cart must meet this amount</span>
+                  <span className="text-[10px] text-stone-400 mt-0.5 block">Cart must meet this threshold</span>
                 </div>
 
                 <div>
@@ -558,7 +757,7 @@ export default function AdminCouponsPage() {
                     onChange={(e) => setEditingCoupon({ ...editingCoupon, maxDiscount: Number(e.target.value) })}
                     className="w-full px-3 py-2 rounded-xl border border-stone-200 outline-none focus:ring-1 focus:ring-rose-500"
                   />
-                  <span className="text-[10px] text-stone-400 mt-0.5 block">Upper limit on percentage discounts</span>
+                  <span className="text-[10px] text-stone-400 mt-0.5 block">Upper limit for percentage discounts</span>
                 </div>
               </div>
 
@@ -572,6 +771,7 @@ export default function AdminCouponsPage() {
                     onChange={(e) => setEditingCoupon({ ...editingCoupon, expiryDate: e.target.value })}
                     className="w-full px-3 py-2 rounded-xl border border-stone-200 outline-none focus:ring-1 focus:ring-rose-500"
                   />
+                  <span className="text-[10px] text-stone-400 mt-0.5 block">Coupon remains valid till 23:59:59 on this date</span>
                 </div>
 
                 <div>
@@ -583,6 +783,42 @@ export default function AdminCouponsPage() {
                     onChange={(e) => setEditingCoupon({ ...editingCoupon, usageLimit: Number(e.target.value) })}
                     className="w-full px-3 py-2 rounded-xl border border-stone-200 outline-none focus:ring-1 focus:ring-rose-500"
                   />
+                  <span className="text-[10px] text-stone-400 mt-0.5 block">Max total redemptions across store</span>
+                </div>
+              </div>
+
+              {/* Live Storefront Preview */}
+              <div className="pt-2">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400 block mb-1.5 flex items-center gap-1">
+                  <Eye className="w-3.5 h-3.5 text-stone-500" />
+                  <span>Storefront Customer Preview:</span>
+                </span>
+                <div className="p-3.5 rounded-2xl border border-dashed border-rose-300 bg-gradient-to-r from-rose-50/50 via-white to-amber-50/30 flex items-center justify-between gap-3">
+                  <div className="space-y-0.5">
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-xs font-black tracking-wider text-stone-900 bg-stone-100 px-2 py-0.5 rounded-md border border-stone-200">
+                        {editingCoupon.code || "SAMPLE"}
+                      </span>
+                      <span className="text-xs font-black text-rose-600">
+                        {editingCoupon.discountType === "percentage"
+                          ? `${editingCoupon.discountValue || 0}% OFF`
+                          : `₹${editingCoupon.discountValue || 0} OFF`}
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-stone-600 font-medium">
+                      {editingCoupon.description || "Special celebration discount"}
+                    </p>
+                    <span className="text-[10px] text-stone-400 block">
+                      Min Order: ₹{editingCoupon.minOrderValue || 0}
+                      {editingCoupon.discountType === "percentage" && editingCoupon.maxDiscount > 0
+                        ? ` • Max Save: ₹${editingCoupon.maxDiscount}`
+                        : ""}
+                    </span>
+                  </div>
+
+                  <span className="px-3 py-1 rounded-xl bg-rose-600 text-white text-[11px] font-bold shadow-xs">
+                    Apply
+                  </span>
                 </div>
               </div>
 

@@ -1,21 +1,94 @@
 import { Coupon } from "@/lib/types";
 
+export const DEFAULT_COUPONS: Coupon[] = [
+  {
+    id: "cpn_glow10",
+    code: "GLOW10",
+    description: "Get 10% off on your handcrafted gifting order (Max discount ₹250)",
+    discountType: "percentage",
+    discountValue: 10,
+    minOrderValue: 499,
+    maxDiscount: 250,
+    startDate: "2025-01-01T00:00:00.000Z",
+    expiryDate: "2027-12-31T23:59:59.999Z",
+    usageLimit: 1000,
+    usageCount: 14,
+    active: true,
+    autoApply: false,
+    createdAt: "2025-01-01T00:00:00.000Z",
+  },
+  {
+    id: "cpn_welcome50",
+    code: "WELCOME50",
+    description: "Flat ₹50 OFF for all new celebration seekers",
+    discountType: "fixed",
+    discountValue: 50,
+    minOrderValue: 299,
+    maxDiscount: 50,
+    startDate: "2025-01-01T00:00:00.000Z",
+    expiryDate: "2027-12-31T23:59:59.999Z",
+    usageLimit: 500,
+    usageCount: 32,
+    active: true,
+    autoApply: false,
+    createdAt: "2025-01-01T00:00:00.000Z",
+  },
+  {
+    id: "cpn_festive500",
+    code: "FESTIVE500",
+    description: "Flat ₹500 OFF on luxury festive hampers above ₹2,499",
+    discountType: "fixed",
+    discountValue: 500,
+    minOrderValue: 2499,
+    maxDiscount: 500,
+    startDate: "2025-01-01T00:00:00.000Z",
+    expiryDate: "2027-12-31T23:59:59.999Z",
+    usageLimit: 200,
+    usageCount: 8,
+    active: true,
+    autoApply: false,
+    createdAt: "2025-01-01T00:00:00.000Z",
+  },
+  {
+    id: "cpn_magic15",
+    code: "MAGIC15",
+    description: "Auto-applies 15% discount for orders above ₹1,499",
+    discountType: "percentage",
+    discountValue: 15,
+    minOrderValue: 1499,
+    maxDiscount: 400,
+    startDate: "2025-01-01T00:00:00.000Z",
+    expiryDate: "2027-12-31T23:59:59.999Z",
+    usageLimit: 300,
+    usageCount: 21,
+    active: true,
+    autoApply: true,
+    createdAt: "2025-01-01T00:00:00.000Z",
+  },
+];
+
 const LOCAL_KEY = "glimglee_live_coupons";
 const LEGACY_KEY = "glimglee_db_coupons";
 
 function getLocalCoupons(): Coupon[] {
-  if (typeof window === "undefined") return [];
+  if (typeof window === "undefined") return DEFAULT_COUPONS;
   try {
     if (localStorage.getItem(LEGACY_KEY)) {
       localStorage.removeItem(LEGACY_KEY);
     }
     const raw = localStorage.getItem(LOCAL_KEY);
-    if (!raw) return [];
+    if (!raw) {
+      localStorage.setItem(LOCAL_KEY, JSON.stringify(DEFAULT_COUPONS));
+      return DEFAULT_COUPONS;
+    }
     const list = JSON.parse(raw);
-    if (!Array.isArray(list)) return [];
+    if (!Array.isArray(list) || list.length === 0) {
+      localStorage.setItem(LOCAL_KEY, JSON.stringify(DEFAULT_COUPONS));
+      return DEFAULT_COUPONS;
+    }
     return list;
   } catch {
-    return [];
+    return DEFAULT_COUPONS;
   }
 }
 
@@ -23,10 +96,20 @@ function saveLocalCoupons(coupons: Coupon[]) {
   if (typeof window !== "undefined") {
     try {
       localStorage.setItem(LOCAL_KEY, JSON.stringify(coupons));
+      window.dispatchEvent(new CustomEvent("glimglee_coupons_updated", { detail: coupons }));
     } catch (e) {
       console.error("Failed to save local coupons:", e);
     }
   }
+}
+
+function normalizeExpiry(dateStr?: string): Date | null {
+  if (!dateStr) return null;
+  // If only YYYY-MM-DD, set to 23:59:59.999
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr.trim())) {
+    return new Date(`${dateStr.trim()}T23:59:59.999Z`);
+  }
+  return new Date(dateStr);
 }
 
 export async function getCoupons(): Promise<Coupon[]> {
@@ -38,17 +121,30 @@ export async function getCoupons(): Promise<Coupon[]> {
       if (isMongoConfigured) {
         const db = await getDb();
         const docs = await db.collection<Coupon>("coupons").find({}).sort({ createdAt: -1 }).toArray();
-        list = docs;
+        if (docs.length > 0) {
+          list = docs;
+        } else {
+          // Seed defaults
+          try {
+            await db.collection("coupons").insertMany(DEFAULT_COUPONS as any);
+            list = DEFAULT_COUPONS;
+          } catch {
+            list = DEFAULT_COUPONS;
+          }
+        }
+      } else {
+        list = DEFAULT_COUPONS;
       }
     } catch (e) {
       console.warn("Direct mongo getCoupons error:", e);
+      list = DEFAULT_COUPONS;
     }
   } else {
     try {
       const res = await fetch("/api/coupons", { cache: "no-store" });
       if (res.ok) {
         const data = await res.json();
-        if (Array.isArray(data.coupons)) {
+        if (Array.isArray(data.coupons) && data.coupons.length > 0) {
           list = data.coupons;
         }
       }
@@ -64,6 +160,23 @@ export async function getCoupons(): Promise<Coupon[]> {
   return list;
 }
 
+/**
+ * Returns only active, unexpired coupons available for customers
+ */
+export async function getAvailableCoupons(): Promise<Coupon[]> {
+  const coupons = await getCoupons();
+  const now = new Date();
+
+  return coupons.filter((c) => {
+    if (!c.active) return false;
+    const expiry = normalizeExpiry(c.expiryDate);
+    if (expiry && expiry < now) return false;
+    if (c.startDate && new Date(c.startDate) > now) return false;
+    if (c.usageLimit && (c.usageCount || 0) >= c.usageLimit) return false;
+    return true;
+  });
+}
+
 export interface CouponValidationResult {
   valid: boolean;
   coupon?: Coupon;
@@ -73,38 +186,49 @@ export interface CouponValidationResult {
 
 export async function validateCoupon(code: string, subtotal: number): Promise<CouponValidationResult> {
   const coupons = await getCoupons();
-  const clean = code.trim().toUpperCase();
+  const clean = (code || "").trim().toUpperCase();
+
+  if (!clean) {
+    return { valid: false, discountAmount: 0, message: "Please enter a coupon code." };
+  }
+
   const found = coupons.find((c) => c.code.toUpperCase() === clean);
 
   if (!found) {
-    return { valid: false, discountAmount: 0, message: "Invalid coupon code." };
+    return { valid: false, discountAmount: 0, message: `Coupon "${clean}" is invalid.` };
   }
 
   if (!found.active) {
-    return { valid: false, discountAmount: 0, message: "This coupon is no longer active." };
+    return { valid: false, discountAmount: 0, message: `Coupon "${found.code}" is no longer active.` };
   }
 
   const now = new Date();
-  if (found.expiryDate && new Date(found.expiryDate) < now) {
-    return { valid: false, discountAmount: 0, message: "This coupon has expired." };
+  const expiry = normalizeExpiry(found.expiryDate);
+  if (expiry && expiry < now) {
+    return { valid: false, discountAmount: 0, message: `Coupon "${found.code}" has expired.` };
+  }
+
+  if (found.startDate && new Date(found.startDate) > now) {
+    return { valid: false, discountAmount: 0, message: `Coupon "${found.code}" is not yet active.` };
   }
 
   if (found.minOrderValue && subtotal < found.minOrderValue) {
+    const diff = found.minOrderValue - subtotal;
     return {
       valid: false,
       discountAmount: 0,
-      message: `Minimum order value of ₹${found.minOrderValue} required for this coupon.`,
+      message: `Add ₹${diff.toLocaleString("en-IN")} more to use coupon "${found.code}" (Min order ₹${found.minOrderValue.toLocaleString("en-IN")}).`,
     };
   }
 
-  if (found.usageLimit && found.usageCount >= found.usageLimit) {
-    return { valid: false, discountAmount: 0, message: "Coupon usage limit has been reached." };
+  if (found.usageLimit && (found.usageCount || 0) >= found.usageLimit) {
+    return { valid: false, discountAmount: 0, message: `Coupon "${found.code}" usage limit has been reached.` };
   }
 
   let discountAmount = 0;
   if (found.discountType === "percentage") {
     discountAmount = Math.round((subtotal * found.discountValue) / 100);
-    if (found.maxDiscount && discountAmount > found.maxDiscount) {
+    if (found.maxDiscount && found.maxDiscount > 0 && discountAmount > found.maxDiscount) {
       discountAmount = found.maxDiscount;
     }
   } else {
@@ -115,7 +239,7 @@ export async function validateCoupon(code: string, subtotal: number): Promise<Co
     valid: true,
     coupon: found,
     discountAmount,
-    message: `Coupon ${found.code} applied! Saved ₹${discountAmount}.`,
+    message: `Coupon ${found.code} applied! Saved ₹${discountAmount.toLocaleString("en-IN")}.`,
   };
 }
 
@@ -129,10 +253,11 @@ export async function getAutoApplicableCoupon(subtotal: number): Promise<CouponV
   // Filter valid auto-apply coupons
   const candidates = coupons.filter((c) => {
     if (!c.active || !c.autoApply) return false;
-    if (c.expiryDate && new Date(c.expiryDate) < now) return false;
+    const expiry = normalizeExpiry(c.expiryDate);
+    if (expiry && expiry < now) return false;
     if (c.startDate && new Date(c.startDate) > now) return false;
     if (c.minOrderValue && subtotal < c.minOrderValue) return false;
-    if (c.usageLimit && c.usageCount >= c.usageLimit) return false;
+    if (c.usageLimit && (c.usageCount || 0) >= c.usageLimit) return false;
     return true;
   });
 
@@ -146,7 +271,9 @@ export async function getAutoApplicableCoupon(subtotal: number): Promise<CouponV
     let disc = 0;
     if (c.discountType === "percentage") {
       disc = Math.round((subtotal * c.discountValue) / 100);
-      if (c.maxDiscount && disc > c.maxDiscount) disc = c.maxDiscount;
+      if (c.maxDiscount && c.maxDiscount > 0 && disc > c.maxDiscount) {
+        disc = c.maxDiscount;
+      }
     } else {
       disc = Math.min(c.discountValue, subtotal);
     }
@@ -163,29 +290,31 @@ export async function getAutoApplicableCoupon(subtotal: number): Promise<CouponV
     valid: true,
     coupon: bestCoupon,
     discountAmount: maxDiscount,
-    message: `Auto-applied: ${bestCoupon.code} (Saved ₹${maxDiscount})`,
+    message: `Auto-applied: ${bestCoupon.code} (Saved ₹${maxDiscount.toLocaleString("en-IN")})`,
   };
 }
 
 export async function saveCoupon(coupon: Partial<Coupon> & { id?: string }): Promise<Coupon> {
   const id = coupon.id || `cpn_${Date.now()}`;
+  const now = new Date().toISOString();
+
   const fullCoupon: Coupon = {
     id,
     code: (coupon.code || "SAVE10").toUpperCase().trim(),
     discountType: coupon.discountType || "percentage",
-    discountValue: coupon.discountValue ?? 10,
-    minOrderValue: coupon.minOrderValue ?? 0,
-    maxDiscount: coupon.maxDiscount ?? 500,
-    startDate: coupon.startDate || new Date().toISOString(),
+    discountValue: Number(coupon.discountValue ?? 10),
+    minOrderValue: Number(coupon.minOrderValue ?? 0),
+    maxDiscount: Number(coupon.maxDiscount ?? 500),
+    startDate: coupon.startDate || now,
     expiryDate: coupon.expiryDate || new Date(Date.now() + 30 * 86400000).toISOString(),
-    usageLimit: coupon.usageLimit ?? 1000,
-    usageCount: coupon.usageCount ?? 0,
+    usageLimit: Number(coupon.usageLimit ?? 1000),
+    usageCount: Number(coupon.usageCount ?? 0),
     active: coupon.active ?? true,
     autoApply: coupon.autoApply ?? false,
     description: coupon.description || "",
     applicableCategories: coupon.applicableCategories || [],
-    createdAt: coupon.createdAt || new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
+    createdAt: coupon.createdAt || now,
+    updatedAt: now,
   };
 
   if (typeof window !== "undefined") {
@@ -219,7 +348,7 @@ export async function saveCoupon(coupon: Partial<Coupon> & { id?: string }): Pro
   if (idx >= 0) {
     local[idx] = fullCoupon;
   } else {
-    local.push(fullCoupon);
+    local.unshift(fullCoupon);
   }
   saveLocalCoupons(local);
 
@@ -252,4 +381,57 @@ export async function deleteCoupon(id: string): Promise<boolean> {
   const local = getLocalCoupons().filter((c) => c.id !== id);
   saveLocalCoupons(local);
   return true;
+}
+
+/**
+ * Increments coupon usage count when an order is created or confirmed
+ */
+export async function recordCouponUsage(code?: string): Promise<void> {
+  if (!code) return;
+  const clean = code.trim().toUpperCase();
+
+  if (typeof window !== "undefined") {
+    try {
+      await fetch("/api/coupons/usage", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: clean }),
+      });
+    } catch (e) {
+      console.warn("Failed to call /api/coupons/usage:", e);
+    }
+  } else {
+    try {
+      const { getDb, isMongoConfigured } = await import("@/lib/mongodb/client");
+      if (isMongoConfigured) {
+        const db = await getDb();
+        await db.collection("coupons").updateOne(
+          { code: clean },
+          { $inc: { usageCount: 1 } }
+        );
+      }
+    } catch (e) {
+      console.warn("Direct mongo coupon usage error:", e);
+    }
+  }
+
+  // Update local storage
+  if (typeof window !== "undefined") {
+    const local = getLocalCoupons();
+    const item = local.find((c) => c.code.toUpperCase() === clean);
+    if (item) {
+      item.usageCount = (item.usageCount || 0) + 1;
+      saveLocalCoupons(local);
+    }
+  }
+}
+
+/**
+ * Random code generator utility for admin
+ */
+export function generateCouponCode(type: "percentage" | "fixed" = "percentage", value: number = 10): string {
+  const prefixes = ["GLOW", "SAVE", "FESTIVE", "MAGIC", "GIFT", "SPECIAL", "TREAT"];
+  const prefix = prefixes[Math.floor(Math.random() * prefixes.length)];
+  const suffix = value > 0 ? value : Math.floor(100 + Math.random() * 900);
+  return `${prefix}${suffix}`;
 }

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getProductById, validateCoupon, createOrder } from "@/lib/services/storeDb";
+import { getProductById, validateCoupon, createOrder, recordCouponUsage } from "@/lib/services/storeDb";
 import { cashfreeService } from "@/lib/payment/cashfree";
 
 // In-memory idempotency cache to prevent duplicate order placements upon retries/double-clicks
@@ -120,6 +120,12 @@ export async function POST(req: Request) {
       orderStatus: "pending_payment",
       idempotencyKey: key || undefined,
     });
+
+    if (couponCode) {
+      recordCouponUsage(couponCode).catch((err) =>
+        console.warn("Could not record coupon usage:", err)
+      );
+    }
 
     let paymentSessionId: string | undefined;
 
