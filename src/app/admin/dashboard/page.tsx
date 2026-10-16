@@ -308,6 +308,7 @@ export default function AdminDashboardPage() {
                       onChange={(e) => handleStatusChange(order.id, e.target.value as Order["orderStatus"])}
                       className="text-xs bg-stone-100 border border-stone-200 rounded-lg px-2 py-1 font-semibold text-stone-800 focus:outline-none cursor-pointer"
                     >
+                      <option value="pending_payment">Pending Payment</option>
                       <option value="placed">Placed</option>
                       <option value="confirmed">Confirmed</option>
                       <option value="processing">Processing</option>

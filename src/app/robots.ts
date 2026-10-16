@@ -4,59 +4,42 @@ import { SITE_URL } from "@/lib/config/site";
 export default function robots(): MetadataRoute.Robots {
   const baseUrl = SITE_URL;
 
+  const standardDisallow = [
+    "/admin",
+    "/admin/",
+    "/api/",
+    "/checkout",
+    "/checkout/",
+    "/cart",
+    "/account",
+    "/account/",
+    "/wishlist",
+    "/orders",
+    "/orders/",
+    "/order-success/",
+    "/login",
+    "/register",
+    "/forgot-password",
+  ];
+
   return {
     rules: [
       {
         userAgent: "*",
-        allow: [
-          "/",
-          "/shop",
-          "/products/",
-          "/category/",
-          "/categories",
-          "/about",
-          "/contact",
-          "/faq",
-          "/orders/track",
-          "/privacy-policy",
-          "/terms",
-          "/shipping-policy",
-          "/return-policy",
-        ],
-        disallow: [
-          "/admin",
-          "/admin/",
-          "/api/",
-          "/checkout",
-          "/checkout/",
-          "/cart",
-          "/account",
-          "/account/",
-          "/wishlist",
-          "/orders",
-          "/orders/",
-          "/login",
-          "/register",
-          "/forgot-password",
-        ],
+        allow: "/",
+        disallow: standardDisallow,
       },
       {
         userAgent: "Googlebot",
         allow: "/",
-        disallow: [
-          "/admin/",
-          "/api/",
-          "/checkout/",
-          "/cart",
-          "/account/",
-          "/wishlist",
-          "/login",
-          "/register",
-          "/forgot-password",
-        ],
+        disallow: standardDisallow,
+      },
+      {
+        userAgent: "Bingbot",
+        allow: "/",
+        disallow: standardDisallow,
       },
     ],
     sitemap: `${baseUrl}/sitemap.xml`,
-    host: baseUrl,
   };
 }

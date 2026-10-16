@@ -122,6 +122,7 @@ export interface Order {
   paymentMethod: "cashfree" | "razorpay" | "upi" | "card" | "cod";
   paymentId?: string;
   orderStatus:
+    | "pending_payment"
     | "placed"
     | "confirmed"
     | "processing"

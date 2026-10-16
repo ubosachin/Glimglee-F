@@ -24,6 +24,7 @@ export async function POST(req: Request) {
       const orderId = event.data.order.order_id;
       await updateOrderStatus(orderId, {
         paymentStatus: "failed",
+        orderStatus: "cancelled",
       });
       return NextResponse.json({ received: true });
     }

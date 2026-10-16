@@ -303,7 +303,12 @@ export default function ProductDetailPage() {
                         : "border-stone-200 hover:border-stone-300 opacity-80"
                     }`}
                   >
-                    <Image src={img} alt="Thumbnail" fill className="object-cover" />
+                    <Image
+                      src={img}
+                      alt={`${product.name} thumbnail view ${idx + 1}`}
+                      fill
+                      className="object-cover"
+                    />
                   </button>
                 ))}
               </div>

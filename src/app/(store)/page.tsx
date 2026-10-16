@@ -205,7 +205,11 @@ export default function HomePage() {
                 {cms?.heroImage ? (
                   <Image
                     src={cms.heroImage}
-                    alt="Glimglee Luxury Keepsake"
+                    alt={
+                      cms?.heroHeading
+                        ? `${cms.heroHeading} — Glimglee Luxury Gifts`
+                        : "Glimglee Handcrafted Luxury Keepsakes & Personalized Hampers"
+                    }
                     fill
                     priority
                     className="object-cover"

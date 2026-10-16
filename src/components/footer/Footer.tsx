@@ -164,11 +164,11 @@ export const Footer: React.FC = () => {
             <div className="space-y-3">
               <h4 className="text-xs font-bold text-white uppercase tracking-wider">Occasions</h4>
               <ul className="space-y-2 text-xs text-stone-400">
-                <li><Link href="/shop?occasion=Birthday" className="hover:text-white transition-colors">Birthday Gifts</Link></li>
-                <li><Link href="/shop?occasion=Anniversary" className="hover:text-white transition-colors">Anniversary</Link></li>
-                <li><Link href="/shop?occasion=Corporate" className="hover:text-white transition-colors">Corporate Hampers</Link></li>
-                <li><Link href="/categories" className="hover:text-white transition-colors">Festivals</Link></li>
-                <li><Link href="/shop" className="hover:text-white transition-colors">Couple Gifts</Link></li>
+                <li><Link href="/occasions/birthday-gifts" className="hover:text-white transition-colors">Birthday Gifts</Link></li>
+                <li><Link href="/occasions/anniversary-gifts" className="hover:text-white transition-colors">Anniversary Keepsakes</Link></li>
+                <li><Link href="/occasions/corporate-gifting" className="hover:text-white transition-colors">Corporate Hampers</Link></li>
+                <li><Link href="/occasions/couple-gifts" className="hover:text-white transition-colors">Couple Gifts</Link></li>
+                <li><Link href="/categories" className="hover:text-white transition-colors">All Occasions</Link></li>
               </ul>
             </div>
 
@@ -248,10 +248,10 @@ export const Footer: React.FC = () => {
               </button>
               {openSection === "occasions" && (
                 <ul className="pb-3.5 space-y-2 text-xs text-stone-400 animate-in fade-in">
-                  <li><Link href="/shop?occasion=Birthday" className="hover:text-white">Birthday Gifts</Link></li>
-                  <li><Link href="/shop?occasion=Anniversary" className="hover:text-white">Anniversary Tokens</Link></li>
-                  <li><Link href="/shop?occasion=Corporate" className="hover:text-white">Corporate Gifting</Link></li>
-                  <li><Link href="/categories" className="hover:text-white">Festivals & Celebrations</Link></li>
+                  <li><Link href="/occasions/birthday-gifts" className="hover:text-white">Birthday Gifts</Link></li>
+                  <li><Link href="/occasions/anniversary-gifts" className="hover:text-white">Anniversary Keepsakes</Link></li>
+                  <li><Link href="/occasions/corporate-gifting" className="hover:text-white">Corporate Gifting</Link></li>
+                  <li><Link href="/occasions/couple-gifts" className="hover:text-white">Couple Gifts</Link></li>
                 </ul>
               )}
             </div>

@@ -13,7 +13,7 @@ export const metadata = {
     title: "Privacy & Photo Security Policy | Glimglee Gifting",
     description:
       "Enterprise encryption, private photo rendering, and strict memory deletion protocols for personalized gifts.",
-    url: "https://glimglee.com/privacy-policy",
+    url: "https://www.glimglee.com/privacy-policy",
   },
 };
 

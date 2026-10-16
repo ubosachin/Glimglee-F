@@ -93,7 +93,13 @@ export async function POST(req: Request) {
     const verifiedGiftWrap = Number(giftWrapTotal) || 0;
     const serverTotal = Math.max(0, serverSubtotal - serverDiscount) + verifiedGiftWrap + serverShipping;
 
-    const isCod = paymentMethod === "cod";
+    // Strict: Cash on Delivery is disabled. Only Cashfree online payment is accepted.
+    if (paymentMethod === "cod") {
+      return NextResponse.json(
+        { error: "Cash on Delivery is disabled. Only secure online payment (Cashfree) is accepted." },
+        { status: 400 }
+      );
+    }
 
     const newOrder = await createOrder({
       userId: userId || "guest",
@@ -110,33 +116,52 @@ export async function POST(req: Request) {
       total: serverTotal,
       couponCode: couponCode || undefined,
       paymentStatus: "pending",
-      paymentMethod: isCod ? "cod" : "cashfree",
-      orderStatus: "placed",
+      paymentMethod: "cashfree",
+      orderStatus: "pending_payment",
       idempotencyKey: key || undefined,
     });
 
     let paymentSessionId: string | undefined;
 
-    if (!isCod) {
-      try {
-        const origin = (req.headers.get("origin") || process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000").replace(/\/+$/, "");
-        const cfOrder = await cashfreeService.createOrder({
-          orderId: newOrder.id,
-          orderAmount: newOrder.total,
-          orderCurrency: "INR",
-          customer: {
-            customer_id: customerEmail.replace(/[^a-zA-Z0-9]/g, "_"),
-            customer_name: customerName,
-            customer_email: customerEmail,
-            customer_phone: customerPhone,
-          },
-          returnUrl: `${origin}/api/payment/cashfree/verify?order_id=${encodeURIComponent(newOrder.id)}`,
-          orderNote: `Glimglee Order #${newOrder.orderNumber}`,
-        });
-        paymentSessionId = cfOrder.payment_session_id;
-      } catch (cfErr) {
-        console.error("Cashfree order generation error:", cfErr);
-      }
+    try {
+      const origin = (req.headers.get("origin") || process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000").replace(/\/+$/, "");
+      const cfOrder = await cashfreeService.createOrder({
+        orderId: newOrder.id,
+        orderAmount: newOrder.total,
+        orderCurrency: "INR",
+        customer: {
+          customer_id: customerEmail.replace(/[^a-zA-Z0-9]/g, "_"),
+          customer_name: customerName,
+          customer_email: customerEmail,
+          customer_phone: customerPhone,
+        },
+        returnUrl: `${origin}/api/payment/cashfree/verify?order_id=${encodeURIComponent(newOrder.id)}`,
+        orderNote: `Glimglee Order #${newOrder.orderNumber}`,
+      });
+      paymentSessionId = cfOrder.payment_session_id;
+    } catch (cfErr: any) {
+      console.error("Cashfree order generation error:", cfErr);
+      const { updateOrderStatus } = await import("@/lib/services/orders");
+      await updateOrderStatus(newOrder.id, {
+        paymentStatus: "failed",
+        orderStatus: "cancelled",
+      });
+      return NextResponse.json(
+        { error: cfErr?.message || "Could not initialize secure online payment gateway. Please check network and retry." },
+        { status: 400 }
+      );
+    }
+
+    if (!paymentSessionId) {
+      const { updateOrderStatus } = await import("@/lib/services/orders");
+      await updateOrderStatus(newOrder.id, {
+        paymentStatus: "failed",
+        orderStatus: "cancelled",
+      });
+      return NextResponse.json(
+        { error: "Payment gateway did not provide a valid session. Please try again." },
+        { status: 400 }
+      );
     }
 
     if (key) {

@@ -1,6 +1,8 @@
 import React from "react";
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import { getProductBySlug } from "@/lib/services/products";
+import { getReviews } from "@/lib/services/storeDb";
 import { SITE_URL } from "@/lib/config/site";
 import { stripHtml } from "@/lib/utils/text";
 
@@ -28,7 +30,7 @@ export async function generateMetadata({
       };
     }
 
-    const title = `${product.name} — Buy Online | Glimglee Personalized Gifts`;
+    const title = `${product.name} — Buy Online`;
     const rawCleanDesc = stripHtml(product.description || "");
     const description =
       product.shortDescription ||
@@ -99,10 +101,25 @@ export default async function ProductLayout({
   try {
     const product = await getProductBySlug(slug);
 
+    if (!product) {
+      notFound();
+    }
+
     if (product) {
       const canonicalUrl = `${siteUrl}/products/${product.slug}`;
       const categorySlug = product.categoryId || "gifts";
       const categoryName = product.category || "Gifts";
+
+      const reviews = await getReviews(product.id);
+      const hasReviews = reviews && reviews.length > 0;
+      const reviewCount = hasReviews ? reviews.length : (product.reviewCount || 0);
+      const ratingValue = hasReviews
+        ? Number(
+            (
+              reviews.reduce((acc, r) => acc + (r.rating || 5), 0) / reviews.length
+            ).toFixed(1)
+          )
+        : product.rating;
 
       productSchema = {
         "@context": "https://schema.org",
@@ -178,13 +195,39 @@ export default async function ProductLayout({
             returnFees: "https://schema.org/FreeReturn",
           },
         },
-        aggregateRating: {
-          "@type": "AggregateRating",
-          ratingValue: product.rating || 5.0,
-          reviewCount: Math.max(product.reviewCount || 1, 1),
-          bestRating: "5",
-          worstRating: "1",
-        },
+        ...(reviewCount > 0 && ratingValue
+          ? {
+              aggregateRating: {
+                "@type": "AggregateRating",
+                ratingValue: ratingValue,
+                reviewCount: reviewCount,
+                bestRating: "5",
+                worstRating: "1",
+              },
+            }
+          : {}),
+        ...(hasReviews
+          ? {
+              review: reviews.slice(0, 10).map((r) => ({
+                "@type": "Review",
+                reviewRating: {
+                  "@type": "Rating",
+                  ratingValue: r.rating || 5,
+                  bestRating: "5",
+                  worstRating: "1",
+                },
+                author: {
+                  "@type": "Person",
+                  name: r.userName || "Verified Customer",
+                },
+                datePublished: r.createdAt
+                  ? r.createdAt.split("T")[0]
+                  : new Date().toISOString().split("T")[0],
+                reviewBody:
+                  r.comment || r.title || "Handcrafted personalized keepsake from Glimglee.",
+              })),
+            }
+          : {}),
       };
 
       breadcrumbSchema = {

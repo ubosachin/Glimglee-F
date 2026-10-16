@@ -13,7 +13,7 @@ export const metadata = {
     title: "Terms & Conditions | Glimglee Gifting",
     description:
       "Terms of service, custom order processing guidelines, and merchant fulfillment commitments.",
-    url: "https://glimglee.com/terms",
+    url: "https://www.glimglee.com/terms",
   },
 };
 

@@ -85,13 +85,7 @@ export class GlimgleePaymentService {
 
   async processCheckoutPayment(params: PaymentInitiationParams): Promise<PaymentVerificationResult> {
     if (params.method === "cod") {
-      return {
-        success: true,
-        paymentId: `cod_${Date.now()}`,
-        transactionRef: `cod_ref_${params.orderNumber}`,
-        method: "cod",
-        message: "Cash on delivery selected. Payment due upon arrival.",
-      };
+      throw new Error("Cash on Delivery is disabled. All orders require secure online payment.");
     }
 
     // Initiate Cashfree PG session

@@ -154,6 +154,20 @@ function TrackContent() {
               </div>
             )}
 
+            {selectedOrder.orderStatus === "cancelled" && (
+              <div className="p-4 bg-stone-100 border border-stone-200 rounded-2xl text-stone-700 text-xs font-medium space-y-1">
+                <span className="font-bold text-stone-900 block">Order Cancelled</span>
+                <p>This order was not confirmed due to incomplete or declined payment.</p>
+              </div>
+            )}
+
+            {selectedOrder.orderStatus === "pending_payment" && (
+              <div className="p-4 bg-amber-50 border border-amber-200 rounded-2xl text-amber-900 text-xs font-medium space-y-1">
+                <span className="font-bold text-amber-800 block">Payment Pending</span>
+                <p>We are waiting for payment confirmation from the bank or payment provider.</p>
+              </div>
+            )}
+
             {/* Order Top Bar */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-6 border-b border-stone-100 gap-4">
               <div className="space-y-1">

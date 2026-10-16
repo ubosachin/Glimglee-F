@@ -1,5 +1,6 @@
 import React from "react";
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import { getCategoryBySlug } from "@/lib/services/categories";
 import { SITE_URL } from "@/lib/config/site";
 
@@ -27,7 +28,7 @@ export async function generateMetadata({
       };
     }
 
-    const title = `${category.name} Gifts & Hampers — Buy Online | Glimglee`;
+    const title = `${category.name} Gifts & Hampers`;
     const description =
       category.description?.slice(0, 160) ||
       `Explore Glimglee's handcrafted ${category.name} collection. Personalized gift hampers, custom keepsakes, and luxury gifts with pan-India express delivery.`;
@@ -97,6 +98,10 @@ export default async function CategoryLayout({
 
   try {
     const category = await getCategoryBySlug(slug);
+
+    if (!category) {
+      notFound();
+    }
 
     if (category) {
       const canonicalUrl = `${siteUrl}/category/${category.slug}`;

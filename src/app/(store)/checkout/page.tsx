@@ -54,15 +54,15 @@ function CheckoutContent() {
 
       if (errorParam === "payment_declined") {
         setPaymentError(
-          "Your previous online payment was not completed or was declined by your bank / UPI app. Don't worry — all your gift items, customizations, and address are safely preserved in your bag! Please retry or choose Cash on Delivery."
+          "Your previous online payment was not completed or was declined by your bank / UPI app. Don't worry — all your gift items, customizations, and address are safely preserved in your bag! Please try again to complete your order."
         );
       } else if (errorParam === "verification_failed") {
         setPaymentError(
-          "Payment verification could not be confirmed. If money was deducted, it will be refunded by your bank within 24-48 hours. Your bag is completely safe — you can retry or choose Cash on Delivery."
+          "Payment verification could not be confirmed. If money was deducted, it will be refunded by your bank within 24-48 hours. Your bag is completely safe — please retry online checkout."
         );
       } else {
         setPaymentError(
-          "Payment was not completed. Your gift bag remains 100% safe! Please try again or switch to Cash on Delivery."
+          "Payment was not completed. Your gift bag remains 100% safe! Please try again to complete your order."
         );
       }
     }
@@ -95,8 +95,8 @@ function CheckoutContent() {
   // Shipping Method
   const [shippingMethod, setShippingMethod] = useState<"standard" | "express">("standard");
 
-  // Payment Method: Cashfree PG or Cash on Delivery
-  const [paymentMethod, setPaymentMethod] = useState<"cashfree" | "cod">("cashfree");
+  // Payment Method: Online Payment via Cashfree only
+  const paymentMethod = "cashfree";
 
   useEffect(() => {
     // Only redirect if cart has finished loading from localStorage and is confirmed empty
@@ -179,36 +179,42 @@ function CheckoutContent() {
         return;
       }
 
-      // 3. Handle Cashfree Online Checkout Flow
-      if (paymentMethod === "cashfree") {
-        if (!orderData.paymentSessionId) {
-          toast("Payment session could not be created. Please select Cash on Delivery or retry.", "error");
-          setPaymentError("Could not initialize payment gateway. Your cart items are completely safe. You can retry or choose Cash on Delivery.");
-          setLoading(false);
-          return;
-        }
-
-        // CRITICAL: We DO NOT call clearCart() here!
-        // The cart will ONLY be cleared when payment is verified and user reaches the confirmed order-success page.
-        const cfEnv = (process.env.NEXT_PUBLIC_CASHFREE_ENV || "sandbox").toLowerCase() === "production" ? "production" : "sandbox";
-        try {
-          await loadCashfreeCheckout(orderData.paymentSessionId, cfEnv);
-          return;
-        } catch (sdkErr) {
-          console.warn("Cashfree checkout window closed or cancelled:", sdkErr);
-          toast("Payment window was closed. Your items are safe in your bag.", "error");
-          setPaymentError("Payment window was closed or cancelled. Your bag items are intact — please try again or select Cash on Delivery.");
-          // Refresh idempotency key so retry generates fresh session
-          idempotencyKeyRef.current = `chk_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
-          setLoading(false);
-          return;
-        }
+      // 3. Handle Cashfree Online Checkout Flow (Only payment method accepted)
+      if (!orderData.paymentSessionId) {
+        toast("Payment session could not be created. Please try again.", "error");
+        setPaymentError("Could not initialize payment gateway. Your cart items are completely safe. Please try again.");
+        setLoading(false);
+        return;
       }
 
-      // 4. Handle Cash on Delivery (COD)
-      // COD orders are placed and confirmed immediately!
-      clearCart();
-      router.push(`/order-success/${orderData.order.id}`);
+      // CRITICAL: We DO NOT call clearCart() here!
+      // The cart will ONLY be cleared when payment is verified and user reaches the confirmed order-success page.
+      const cfEnv = (process.env.NEXT_PUBLIC_CASHFREE_ENV || "sandbox").toLowerCase() === "production" ? "production" : "sandbox";
+      try {
+        await loadCashfreeCheckout(orderData.paymentSessionId, cfEnv);
+        return;
+      } catch (sdkErr) {
+        console.warn("Cashfree checkout window closed or cancelled:", sdkErr);
+        toast("Payment window was closed. Your items are safe in your bag.", "error");
+        setPaymentError("Payment window was closed or cancelled. Your bag items are intact — please try again to confirm your order.");
+        try {
+          await fetch("/api/orders", {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              id: orderData.order.id,
+              paymentStatus: "failed",
+              orderStatus: "cancelled",
+            }),
+          });
+        } catch (cancelErr) {
+          console.warn("Failed to mark abandoned order as cancelled:", cancelErr);
+        }
+        // Refresh idempotency key so retry generates fresh session
+        idempotencyKeyRef.current = `chk_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
+        setLoading(false);
+        return;
+      }
     } catch (err) {
       console.error("Checkout submission error:", err);
       toast("Error processing order. Please check network.", "error");
@@ -548,13 +554,11 @@ function CheckoutContent() {
                     <div className="pt-1 flex flex-wrap gap-2">
                       <button
                         type="button"
-                        onClick={() => {
-                          setPaymentMethod("cod");
-                          setPaymentError(null);
-                        }}
-                        className="px-3.5 py-1.5 rounded-xl bg-amber-700 hover:bg-amber-800 text-white font-bold text-[11px] shadow-sm transition-all"
+                        onClick={handlePlaceOrder}
+                        className="px-3.5 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-[11px] shadow-sm transition-all flex items-center gap-1.5"
                       >
-                        Select Cash on Delivery (COD)
+                        <Lock className="w-3.5 h-3.5" />
+                        <span>Try Payment Again</span>
                       </button>
                     </div>
                   </div>
@@ -565,61 +569,35 @@ function CheckoutContent() {
               <div className="space-y-3 text-xs">
                 {/* Cashfree Payments */}
                 <div
-                  onClick={() => setPaymentMethod("cashfree")}
-                  className={`p-4 rounded-2xl border cursor-pointer transition-all flex items-center justify-between ${
-                    paymentMethod === "cashfree"
-                      ? "bg-rose-50/80 border-rose-500 shadow-sm"
-                      : "border-stone-200 hover:bg-stone-50"
-                  }`}
+                  className="p-4 sm:p-5 rounded-2xl border border-rose-500 bg-rose-50/70 shadow-sm flex items-center justify-between"
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-700 via-purple-700 to-rose-600 text-white flex items-center justify-center font-black text-xs shadow-sm">
+                  <div className="flex items-center gap-3.5">
+                    <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-indigo-700 via-purple-700 to-rose-600 text-white flex items-center justify-center font-black text-xs shadow-sm">
                       CF
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <h4 className="font-bold text-stone-900">Cashfree Secure Checkout</h4>
+                        <h4 className="font-bold text-stone-900 text-sm">Online Secure Checkout (Cashfree)</h4>
                         <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold">
-                          Recommended
+                          100% Secure
                         </span>
                       </div>
-                      <p className="text-[11px] text-stone-500 mt-0.5">
-                        Instant UPI (GPay, PhonePe, Paytm), Credit & Debit Cards, NetBanking & Wallets
+                      <p className="text-[11px] text-stone-600 mt-1">
+                        Instant UPI (GPay, PhonePe, Paytm, BHIM), Credit/Debit Cards, NetBanking & Wallets
                       </p>
                     </div>
                   </div>
                   <input
                     type="radio"
-                    checked={paymentMethod === "cashfree"}
-                    onChange={() => {}}
+                    checked={true}
+                    readOnly
                     className="accent-rose-600 w-4 h-4"
                   />
                 </div>
 
-                {/* COD */}
-                <div
-                  onClick={() => setPaymentMethod("cod")}
-                  className={`p-4 rounded-2xl border cursor-pointer transition-all flex items-center justify-between ${
-                    paymentMethod === "cod"
-                      ? "bg-rose-50/80 border-rose-500 shadow-sm"
-                      : "border-stone-200 hover:bg-stone-50"
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-amber-600 text-white flex items-center justify-center font-black text-xs shadow-sm">
-                      COD
-                    </div>
-                    <div>
-                      <h4 className="font-bold text-stone-900">Cash on Delivery</h4>
-                      <p className="text-[11px] text-stone-500 mt-0.5">Pay upon delivery of your gift at your doorstep</p>
-                    </div>
-                  </div>
-                  <input
-                    type="radio"
-                    checked={paymentMethod === "cod"}
-                    onChange={() => {}}
-                    className="accent-rose-600 w-4 h-4"
-                  />
+                <div className="p-3 rounded-xl bg-stone-50 border border-stone-200/80 text-[11px] text-stone-600 flex items-center gap-2">
+                  <Lock className="w-3.5 h-3.5 text-stone-500 flex-shrink-0" />
+                  <span>Orders are confirmed instantly after successful online payment. We do not accept Cash on Delivery.</span>
                 </div>
               </div>
 

@@ -54,7 +54,12 @@ export class CashfreeService {
   }
 
   public isConfigured(): boolean {
-    return Boolean(this.appId && this.secretKey);
+    const isPlaceholder =
+      !this.appId ||
+      !this.secretKey ||
+      this.appId.includes("your_cashfree") ||
+      this.secretKey.includes("your_cashfree");
+    return !isPlaceholder;
   }
 
   private getHeaders(): Record<string, string> {
@@ -71,17 +76,8 @@ export class CashfreeService {
    */
   async createOrder(params: CreateCashfreeOrderParams): Promise<CashfreeOrderResponse> {
     if (!this.isConfigured()) {
-      // In development when credentials are yet to be filled in .env
       console.warn("Cashfree is missing CASHFREE_APP_ID or CASHFREE_SECRET_KEY. Check .env.local.");
-      return {
-        cf_order_id: `mock_cf_${Date.now()}`,
-        order_id: params.orderId,
-        order_status: "ACTIVE",
-        payment_session_id: `mock_session_${Date.now()}`,
-        order_amount: params.orderAmount,
-        order_currency: params.orderCurrency || "INR",
-        entity: "order",
-      };
+      throw new Error("Cashfree payment gateway is not configured on this server. Please check CASHFREE_APP_ID and CASHFREE_SECRET_KEY in environment variables.");
     }
 
     // Phone validation for Cashfree (must be 10 digits without country code or with valid format)
@@ -104,7 +100,7 @@ export class CashfreeService {
         customer_phone: cleanPhone,
       },
       order_meta: {
-        return_url: params.returnUrl || `${(process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000").replace(/\/+$/, "")}/checkout/status?order_id={order_id}`,
+        return_url: params.returnUrl || `${(process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000").replace(/\/+$/, "")}/api/payment/cashfree/verify?order_id={order_id}`,
       },
       order_note: params.orderNote || `Glimglee Gifting Order #${params.orderId}`,
     };
@@ -133,7 +129,7 @@ export class CashfreeService {
       return {
         cf_order_id: `mock_cf_${orderId}`,
         order_id: orderId,
-        order_status: "PAID",
+        order_status: "ACTIVE",
         payment_session_id: "mock_session",
         order_amount: 100,
         order_currency: "INR",
@@ -159,17 +155,7 @@ export class CashfreeService {
    */
   async getPayments(orderId: string): Promise<CashfreePaymentItem[]> {
     if (!this.isConfigured()) {
-      return [
-        {
-          cf_payment_id: `mock_pay_${Date.now()}`,
-          payment_status: "SUCCESS",
-          payment_amount: 100,
-          payment_currency: "INR",
-          payment_message: "Simulated Success (Dev mode)",
-          payment_time: new Date().toISOString(),
-          payment_method: { upi: { channel: "upi_intent" } },
-        },
-      ];
+      return [];
     }
 
     const res = await fetch(`${this.baseUrl}/orders/${encodeURIComponent(orderId)}/payments`, {
@@ -194,6 +180,15 @@ export class CashfreeService {
     payment: CashfreePaymentItem | null;
     message: string;
   }> {
+    if (!this.isConfigured()) {
+      return {
+        isPaid: false,
+        order: null,
+        payment: null,
+        message: "Cashfree API keys are not configured. Cannot verify real payment.",
+      };
+    }
+
     try {
       const order = await this.getOrder(orderId);
       const payments = await this.getPayments(orderId);

@@ -5,15 +5,15 @@ import { Truck, Clock, ShieldCheck, MapPin, PackageCheck, AlertCircle, ArrowLeft
 export const metadata = {
   title: "Worldwide & Pan-India Shipping Policy | Glimglee Gifting",
   description:
-    "Glimglee ships worldwide. In India: Free delivery on orders above ₹1,500 (₹100 below ₹1,500). International: Free worldwide delivery on orders above ₹5,000 (₹400 below ₹5,000).",
+    "Glimglee shipping policy: Free pan-India delivery over ₹1,500 and free worldwide shipping over ₹5,000. Express courier dispatch with live tracking.",
   alternates: {
     canonical: "/shipping-policy",
   },
   openGraph: {
     title: "Worldwide & Pan-India Shipping Policy | Glimglee Gifting",
     description:
-      "Global delivery rates: Free India delivery over ₹1,500 (₹100 under ₹1,500). Free International shipping over ₹5,000 (₹400 under ₹5,000).",
-    url: "https://glimglee.com/shipping-policy",
+      "Global delivery rates: Free India delivery over ₹1,500 and free international shipping over ₹5,000.",
+    url: "https://www.glimglee.com/shipping-policy",
   },
 };
 

@@ -78,7 +78,12 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({ product, onClose
                       selectedImg === idx ? "border-rose-500 scale-105" : "border-stone-200 opacity-70"
                     }`}
                   >
-                    <Image src={img} alt="Thumbnail" fill className="object-cover" />
+                    <Image
+                      src={img}
+                      alt={`${product.name} preview ${idx + 1}`}
+                      fill
+                      className="object-cover"
+                    />
                   </button>
                 ))}
               </div>

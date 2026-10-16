@@ -126,6 +126,7 @@ export default function AdminOrdersPage() {
               <option value="all">All Statuses</option>
               <option value="placed">Placed</option>
               <option value="confirmed">Confirmed</option>
+              <option value="pending_payment">Pending Payment</option>
               <option value="processing">Processing</option>
               <option value="packed">Packed</option>
               <option value="shipped">Shipped</option>
@@ -190,7 +191,15 @@ export default function AdminOrdersPage() {
                     </span>
                   </td>
                   <td className="py-3.5 px-4">
-                    <span className="px-2.5 py-1 rounded-full bg-rose-50 text-rose-800 border border-rose-200 text-[10px] font-bold uppercase">
+                    <span className={`px-2.5 py-1 rounded-full border text-[10px] font-bold uppercase ${
+                      order.orderStatus === "pending_payment"
+                        ? "bg-amber-50 text-amber-800 border-amber-200"
+                        : order.orderStatus === "cancelled"
+                        ? "bg-stone-100 text-stone-600 border-stone-200"
+                        : order.orderStatus === "confirmed"
+                        ? "bg-emerald-50 text-emerald-800 border-emerald-200"
+                        : "bg-rose-50 text-rose-800 border-rose-200"
+                    }`}>
                       {order.orderStatus.replace(/_/g, " ")}
                     </span>
                   </td>
@@ -257,7 +266,15 @@ export default function AdminOrdersPage() {
                     }`}>
                       {order.paymentStatus}
                     </span>
-                    <span className="px-2 py-0.5 rounded-full bg-rose-50 text-rose-800 border border-rose-200 text-[10px] font-bold uppercase">
+                    <span className={`px-2 py-0.5 rounded-full border text-[10px] font-bold uppercase ${
+                      order.orderStatus === "pending_payment"
+                        ? "bg-amber-50 text-amber-800 border-amber-200"
+                        : order.orderStatus === "cancelled"
+                        ? "bg-stone-100 text-stone-600 border-stone-200"
+                        : order.orderStatus === "confirmed"
+                        ? "bg-emerald-50 text-emerald-800 border-emerald-200"
+                        : "bg-rose-50 text-rose-800 border-rose-200"
+                    }`}>
                       {order.orderStatus.replace(/_/g, " ")}
                     </span>
                   </div>
@@ -371,6 +388,7 @@ export default function AdminOrdersPage() {
                   }
                   className="w-full px-3 py-2 rounded-xl bg-white border border-stone-200 font-bold text-stone-900"
                 >
+                  <option value="pending_payment">Pending Payment</option>
                   <option value="placed">Order Placed</option>
                   <option value="confirmed">Confirmed</option>
                   <option value="processing">Processing & Personalizing</option>

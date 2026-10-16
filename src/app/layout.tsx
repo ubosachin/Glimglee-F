@@ -6,12 +6,14 @@ import { CartProvider } from "@/lib/cart/CartContext";
 import { WishlistProvider } from "@/lib/wishlist/WishlistContext";
 import { ToastProvider } from "@/components/ui/Toast";
 import { StorageAutoPurger } from "@/components/ui/StorageAutoPurger";
+import { GoogleAnalytics } from "@/components/analytics/GoogleAnalytics";
 import { SITE_URL } from "@/lib/config/site";
 
 const fontSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
   weight: ["300", "400", "500", "600", "700", "800"],
   variable: "--font-sans",
+  display: "swap",
 });
 
 export const viewport: Viewport = {
@@ -45,7 +47,7 @@ const organizationSchema = {
   telephone: "+918000045464",
   priceRange: "₹₹",
   currenciesAccepted: "INR",
-  paymentAccepted: "Credit Card, Debit Card, UPI, Net Banking, Cash on Delivery",
+  paymentAccepted: "Credit Card, Debit Card, UPI, Net Banking, Cashfree",
   brand: {
     "@type": "Brand",
     name: "Glimglee",
@@ -59,8 +61,6 @@ const organizationSchema = {
   sameAs: [
     "https://instagram.com/glimglee",
     "https://facebook.com/glimglee",
-    "https://glimglee.com",
-    "https://www.glimglee.com",
   ],
   contactPoint: {
     "@type": "ContactPoint",
@@ -98,10 +98,10 @@ const websiteSchema = {
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "Glimglee™ — Modern Gifting, Made Personal | Luxury Hampers & Keepsakes",
+    default: "Glimglee™ — Personalized Gifts & Luxury Hampers",
     template: "%s | Glimglee",
   },
-  description: "Welcome to the official Glimglee store. Handcrafted personalized luxury hampers, scented soy candles, artisan greeting cards, and personalized floating glass photo frames with express delivery across India & worldwide.",
+  description: "Shop handcrafted personalized gifts, luxury hampers, scented soy candles & keepsake frames at Glimglee. Enjoy express pan-India & worldwide delivery.",
   keywords: [
     "Glimglee",
     "Glimglee store",
@@ -224,6 +224,7 @@ export default function RootLayout({
         />
       </head>
       <body className={`${fontSans.variable} font-sans min-h-full flex flex-col text-stone-900 antialiased max-w-full overflow-x-hidden`}>
+        <GoogleAnalytics />
         <StorageAutoPurger />
         <ToastProvider>
           <AuthProvider>

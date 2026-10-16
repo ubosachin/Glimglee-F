@@ -174,6 +174,10 @@ export default function CustomerOrdersPage() {
                           ? "bg-emerald-100 text-emerald-800"
                           : order.orderStatus === "shipped"
                           ? "bg-blue-100 text-blue-800"
+                          : order.orderStatus === "pending_payment"
+                          ? "bg-amber-100 text-amber-800"
+                          : order.orderStatus === "cancelled"
+                          ? "bg-stone-200 text-stone-700"
                           : "bg-rose-100 text-rose-800"
                       }`}
                     >

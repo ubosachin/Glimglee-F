@@ -5,7 +5,7 @@ import { SITE_URL } from "@/lib/config/site";
 const siteUrl = SITE_URL;
 
 export const metadata: Metadata = {
-  title: "Shop All Luxury Gifts, Scented Candles & Hampers",
+  title: "Shop Luxury Gifts & Scented Hampers",
   description:
     "Explore Glimglee's complete collection of personalized gifts, hand-poured soy candles, artisan greeting cards, and floating glass keepsakes with pan-India express delivery.",
   keywords: [

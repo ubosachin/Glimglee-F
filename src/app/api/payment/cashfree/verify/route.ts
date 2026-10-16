@@ -28,6 +28,7 @@ export async function GET(req: Request) {
     } else {
       await updateOrderStatus(orderId, {
         paymentStatus: "failed",
+        orderStatus: "cancelled",
       });
 
       return NextResponse.redirect(
@@ -39,6 +40,16 @@ export async function GET(req: Request) {
     }
   } catch (error) {
     console.error("Cashfree return_url verification error:", error);
+    if (orderId) {
+      try {
+        await updateOrderStatus(orderId, {
+          paymentStatus: "failed",
+          orderStatus: "cancelled",
+        });
+      } catch (e) {
+        console.warn("Could not cancel failed order:", e);
+      }
+    }
     return NextResponse.redirect(
       new URL(`/checkout?error=verification_failed&order_id=${encodeURIComponent(orderId)}`, req.url)
     );
@@ -62,6 +73,11 @@ export async function POST(req: Request) {
         orderStatus: "confirmed",
         paymentId: result.payment ? String(result.payment.cf_payment_id) : `cf_${orderId}`,
         paymentMethod: "cashfree",
+      });
+    } else {
+      await updateOrderStatus(orderId, {
+        paymentStatus: "failed",
+        orderStatus: "cancelled",
       });
     }
 

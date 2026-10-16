@@ -13,7 +13,7 @@ export const metadata = {
     title: "Return & Replacement Policy | Glimglee Gifting",
     description:
       "Glimglee 100% Happiness Guarantee: Instant hassle-free replacements for any transit damage or manufacturing defect.",
-    url: "https://glimglee.com/return-policy",
+    url: "https://www.glimglee.com/return-policy",
   },
 };
 

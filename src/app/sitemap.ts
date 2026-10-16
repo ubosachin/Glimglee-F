@@ -20,6 +20,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${baseUrl}/terms`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.5 },
   ];
 
+  const occasionRoutes: MetadataRoute.Sitemap = [
+    "birthday-gifts",
+    "anniversary-gifts",
+    "corporate-gifting",
+    "couple-gifts",
+  ].map((slug) => ({
+    url: `${baseUrl}/occasions/${slug}`,
+    lastModified: new Date(),
+    changeFrequency: "weekly" as const,
+    priority: 0.88,
+  }));
+
   let categoryRoutes: MetadataRoute.Sitemap = [];
   let productRoutes: MetadataRoute.Sitemap = [];
 
@@ -29,24 +41,49 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       getProducts({ limitCount: 1000 }),
     ]);
 
-    categoryRoutes = categories.map((c) => ({
-      url: `${baseUrl}/category/${c.slug}`,
-      lastModified: new Date(),
-      changeFrequency: "weekly",
-      priority: 0.85,
-      images: c.imageUrl ? [c.imageUrl] : undefined,
-    }));
+    categoryRoutes = categories
+      .filter((c) => Boolean(c.slug && typeof c.slug === "string" && c.slug.trim().length > 0))
+      .map((c) => ({
+        url: `${baseUrl}/category/${c.slug.trim()}`,
+        lastModified: new Date(),
+        changeFrequency: "weekly",
+        priority: 0.85,
+        images: c.imageUrl ? [c.imageUrl] : undefined,
+      }));
 
-    productRoutes = products.map((p) => ({
-      url: `${baseUrl}/products/${p.slug}`,
-      lastModified: new Date(p.updatedAt || p.createdAt || Date.now()),
-      changeFrequency: "daily",
-      priority: 0.95,
-      images: p.images && p.images.length > 0 ? p.images.slice(0, 5) : undefined,
-    }));
+    productRoutes = products
+      .filter((p) => {
+        const isActive =
+          p.status === "active" ||
+          (p.status !== "draft" && p.status !== "archived" && p.active !== false);
+        const hasValidSlug =
+          Boolean(p.slug && typeof p.slug === "string" && p.slug.trim().length > 0);
+        return isActive && hasValidSlug;
+      })
+      .map((p) => {
+        let lastModDate: Date;
+        try {
+          lastModDate = p.updatedAt
+            ? new Date(p.updatedAt)
+            : p.createdAt
+            ? new Date(p.createdAt)
+            : new Date();
+          if (isNaN(lastModDate.getTime())) lastModDate = new Date();
+        } catch {
+          lastModDate = new Date();
+        }
+
+        return {
+          url: `${baseUrl}/products/${p.slug.trim()}`,
+          lastModified: lastModDate,
+          changeFrequency: "daily" as const,
+          priority: 0.95,
+          images: p.images && p.images.length > 0 ? p.images.slice(0, 5) : undefined,
+        };
+      });
   } catch (error) {
     console.error("Failed to generate dynamic sitemap routes:", error);
   }
 
-  return [...staticRoutes, ...categoryRoutes, ...productRoutes];
+  return [...staticRoutes, ...occasionRoutes, ...categoryRoutes, ...productRoutes];
 }

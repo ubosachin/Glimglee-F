@@ -5,7 +5,7 @@ import { SITE_URL } from "@/lib/config/site";
 const siteUrl = SITE_URL;
 
 export const metadata: Metadata = {
-  title: "Frequently Asked Questions (FAQ) — Orders & Delivery",
+  title: "Frequently Asked Questions (FAQ)",
   description:
     "Find answers to common questions about Glimglee product personalization, delivery timelines across India, luxury packaging, and our 100% Happiness Guarantee.",
   keywords: [
