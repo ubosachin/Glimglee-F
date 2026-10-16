@@ -25,6 +25,7 @@ import {
   X,
   Sparkles,
   ShieldAlert,
+  CheckCircle2,
   ChevronLeft,
   ChevronRight,
   PanelLeftClose,
@@ -81,11 +82,13 @@ export default function AdminLayout({
       ],
     },
     {
-      group: "Orders & Users",
+      group: "Orders & Fulfillment",
       items: [
-        { label: "Orders & Shipping", href: "/admin/orders", icon: ShoppingBag },
-        { label: "User Management & Roles", href: "/admin/users", icon: Users },
+        { label: "Confirmed Orders", href: "/admin/orders/confirmed", icon: CheckCircle2 },
+        { label: "Failed & Cancelled", href: "/admin/orders/cancelled-failed", icon: ShieldAlert },
+        { label: "All Orders Pipeline", href: "/admin/orders", icon: ShoppingBag },
         { label: "Customer Directory", href: "/admin/customers", icon: UserCheck },
+        { label: "User Management & Roles", href: "/admin/users", icon: Users },
       ],
     },
     {

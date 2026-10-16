@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { updateOrderStatus } from "@/lib/services/orders";
+import { recordCouponUsage } from "@/lib/services/coupons";
 
 export async function POST(req: Request) {
   try {
@@ -10,12 +11,16 @@ export async function POST(req: Request) {
       const orderId = event.data.order.order_id;
       const paymentId = String(event.data.payment?.cf_payment_id || `cf_wh_${Date.now()}`);
 
-      await updateOrderStatus(orderId, {
+      const confirmedOrder = await updateOrderStatus(orderId, {
         paymentStatus: "paid",
         orderStatus: "confirmed",
         paymentId,
         paymentMethod: "cashfree",
       });
+
+      if (confirmedOrder?.couponCode) {
+        await recordCouponUsage(confirmedOrder.couponCode);
+      }
 
       return NextResponse.json({ received: true });
     }

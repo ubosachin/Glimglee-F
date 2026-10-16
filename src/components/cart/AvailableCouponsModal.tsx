@@ -38,14 +38,23 @@ export const AvailableCouponsModal: React.FC<AvailableCouponsModalProps> = ({
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
 
   useEffect(() => {
-    if (isOpen) {
+    if (!isOpen) return;
+
+    const loadCoupons = () => {
       setLoading(true);
       getAvailableCoupons()
         .then((data) => {
           setCoupons(data);
         })
         .finally(() => setLoading(false));
-    }
+    };
+
+    loadCoupons();
+
+    window.addEventListener("glimglee_coupons_updated", loadCoupons);
+    return () => {
+      window.removeEventListener("glimglee_coupons_updated", loadCoupons);
+    };
   }, [isOpen]);
 
   if (!isOpen) return null;

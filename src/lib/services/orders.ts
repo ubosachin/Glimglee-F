@@ -32,6 +32,8 @@ function saveLocalOrders(orders: Order[]) {
 
 export interface OrderQueryOptions {
   statusFilter?: string;
+  paymentStatus?: string;
+  type?: "confirmed" | "cancelled-failed" | "all";
   userId?: string;
   limitCount?: number;
   offset?: number;
@@ -43,7 +45,7 @@ export async function getOrders(optionsOrStatus?: OrderQueryOptions | string): P
       ? { statusFilter: optionsOrStatus }
       : optionsOrStatus || {};
 
-  const { statusFilter, userId, limitCount } = options;
+  const { statusFilter, paymentStatus, type, userId, limitCount } = options;
   let list: Order[] = [];
 
   if (typeof window === "undefined") {
@@ -53,7 +55,22 @@ export async function getOrders(optionsOrStatus?: OrderQueryOptions | string): P
         const db = await getDb();
         const filter: any = {};
         if (statusFilter && statusFilter !== "all") filter.orderStatus = statusFilter;
+        if (paymentStatus && paymentStatus !== "all") filter.paymentStatus = paymentStatus;
         if (userId) filter.userId = userId;
+
+        if (type === "confirmed") {
+          filter.$or = [
+            { orderStatus: { $in: ["confirmed", "processing", "packed", "shipped", "out_for_delivery", "delivered"] } },
+            { paymentStatus: "paid", orderStatus: { $nin: ["cancelled", "pending_payment"] } },
+          ];
+        } else if (type === "cancelled-failed") {
+          filter.$or = [
+            { orderStatus: "cancelled" },
+            { paymentStatus: "failed" },
+            { paymentStatus: "refunded" },
+            { orderStatus: "pending_payment", paymentStatus: { $ne: "paid" } },
+          ];
+        }
 
         const docs = await db
           .collection<Order>("orders")
@@ -70,6 +87,8 @@ export async function getOrders(optionsOrStatus?: OrderQueryOptions | string): P
     try {
       const params = new URLSearchParams();
       if (statusFilter && statusFilter !== "all") params.set("status", statusFilter);
+      if (paymentStatus && paymentStatus !== "all") params.set("paymentStatus", paymentStatus);
+      if (type && type !== "all") params.set("type", type);
       if (userId) params.set("userId", userId);
       if (limitCount) params.set("limit", limitCount.toString());
 
@@ -95,6 +114,24 @@ export async function getOrders(optionsOrStatus?: OrderQueryOptions | string): P
 
   if (statusFilter && statusFilter !== "all") {
     list = list.filter((o) => o.orderStatus === statusFilter);
+  }
+  if (paymentStatus && paymentStatus !== "all") {
+    list = list.filter((o) => o.paymentStatus === paymentStatus);
+  }
+  if (type === "confirmed") {
+    list = list.filter(
+      (o) =>
+        (o.orderStatus !== "cancelled" && o.orderStatus !== "pending_payment") ||
+        (o.paymentStatus === "paid" && o.orderStatus !== "cancelled")
+    );
+  } else if (type === "cancelled-failed") {
+    list = list.filter(
+      (o) =>
+        o.orderStatus === "cancelled" ||
+        o.paymentStatus === "failed" ||
+        o.paymentStatus === "refunded" ||
+        (o.orderStatus === "pending_payment" && o.paymentStatus !== "paid")
+    );
   }
   if (userId) {
     list = list.filter((o) => o.userId === userId);
@@ -315,13 +352,21 @@ export async function updateOrderStatus(
     if (courierPartner !== undefined) updatePayload.courierPartner = courierPartner;
   }
 
+  let serverOrder: Order | null = null;
+
   if (typeof window !== "undefined") {
     try {
-      await fetch("/api/orders", {
+      const res = await fetch("/api/orders", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id, ...updatePayload }),
       });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.order) {
+          serverOrder = data.order;
+        }
+      }
     } catch (e) {
       console.warn("PATCH /api/orders error:", e);
     }
@@ -330,10 +375,26 @@ export async function updateOrderStatus(
       const { getDb, isMongoConfigured } = await import("@/lib/mongodb/client");
       if (isMongoConfigured) {
         const db = await getDb();
-        await db.collection("orders").updateOne(
-          { $or: [{ id }, { orderNumber: id }] },
-          { $set: updatePayload }
+        const rawId = (id || "").trim();
+        const withHash = rawId.startsWith("#") ? rawId : `#${rawId}`;
+        const withoutHash = rawId.replace(/^#/, "");
+
+        const res = await db.collection<Order>("orders").findOneAndUpdate(
+          {
+            $or: [
+              { id: rawId },
+              { id: withoutHash },
+              { orderNumber: rawId },
+              { orderNumber: withHash },
+              { orderNumber: withoutHash },
+            ],
+          },
+          { $set: updatePayload },
+          { returnDocument: "after" }
         );
+        if (res) {
+          serverOrder = res;
+        }
       }
     } catch (e) {
       console.warn("Direct mongo updateOrderStatus error:", e);
@@ -341,14 +402,54 @@ export async function updateOrderStatus(
   }
 
   const local = getLocalOrders();
-  const idx = local.findIndex((o) => o.id === id || o.orderNumber === id);
+  const rawId = (id || "").trim();
+  const withHash = rawId.startsWith("#") ? rawId : `#${rawId}`;
+  const withoutHash = rawId.replace(/^#/, "");
+
+  const idx = local.findIndex(
+    (o) =>
+      o.id === rawId ||
+      o.id === withoutHash ||
+      o.orderNumber === rawId ||
+      o.orderNumber === withHash ||
+      o.orderNumber === withoutHash
+  );
+
   if (idx >= 0) {
-    local[idx] = { ...local[idx], ...updatePayload };
+    local[idx] = { ...local[idx], ...(serverOrder || updatePayload) };
     saveLocalOrders(local);
     return local[idx];
+  } else if (serverOrder) {
+    local.unshift(serverOrder);
+    saveLocalOrders(local);
+    return serverOrder;
+  } else {
+    const fallback: Order = {
+      id: rawId,
+      orderNumber: withHash,
+      userId: "guest",
+      customerEmail: "",
+      customerName: "Customer",
+      customerPhone: "",
+      items: [],
+      shippingAddress: { fullName: "Customer", phone: "", email: "", addressLine1: "", city: "", state: "", pincode: "" },
+      subtotal: 0,
+      discount: 0,
+      giftWrap: 0,
+      shipping: 0,
+      tax: 0,
+      total: 0,
+      paymentStatus: (updatePayload.paymentStatus as any) || "paid",
+      paymentMethod: "cashfree",
+      orderStatus: (updatePayload.orderStatus as any) || "confirmed",
+      createdAt: now,
+      updatedAt: now,
+      ...updatePayload,
+    };
+    local.unshift(fallback);
+    saveLocalOrders(local);
+    return fallback;
   }
-
-  return null;
 }
 
 export function subscribeToOrder(

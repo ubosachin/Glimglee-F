@@ -164,6 +164,20 @@ export async function getCoupons(): Promise<Coupon[]> {
  * Returns only active, unexpired coupons available for customers
  */
 export async function getAvailableCoupons(): Promise<Coupon[]> {
+  if (typeof window !== "undefined") {
+    try {
+      const res = await fetch("/api/coupons?available=true", { cache: "no-store" });
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data.coupons)) {
+          return data.coupons;
+        }
+      }
+    } catch (e) {
+      console.warn("Client getAvailableCoupons live fetch error:", e);
+    }
+  }
+
   const coupons = await getCoupons();
   const now = new Date();
 
@@ -185,13 +199,31 @@ export interface CouponValidationResult {
 }
 
 export async function validateCoupon(code: string, subtotal: number): Promise<CouponValidationResult> {
-  const coupons = await getCoupons();
   const clean = (code || "").trim().toUpperCase();
 
   if (!clean) {
     return { valid: false, discountAmount: 0, message: "Please enter a coupon code." };
   }
 
+  // Live real-time check against MongoDB via API in browser
+  if (typeof window !== "undefined") {
+    try {
+      const res = await fetch("/api/coupons/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: clean, subtotal }),
+        cache: "no-store",
+      });
+      if (res.ok) {
+        const data = await res.json();
+        return data;
+      }
+    } catch (e) {
+      console.warn("Client live coupon validation API error, using local fallback:", e);
+    }
+  }
+
+  const coupons = await getCoupons();
   const found = coupons.find((c) => c.code.toUpperCase() === clean);
 
   if (!found) {

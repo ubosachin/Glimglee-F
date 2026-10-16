@@ -101,6 +101,44 @@ export async function POST(req: Request) {
       );
     }
 
+    // Special Case: Order 100% covered by coupon voucher (Final payable = ₹0)
+    if (serverTotal <= 0) {
+      const freeOrder = await createOrder({
+        userId: userId || "guest",
+        customerName,
+        customerEmail,
+        customerPhone,
+        shippingAddress,
+        items: verifiedItems,
+        subtotal: serverSubtotal,
+        discount: serverDiscount,
+        giftWrap: verifiedGiftWrap,
+        shipping: serverShipping,
+        tax: 0,
+        total: 0,
+        couponCode: couponCode || undefined,
+        paymentStatus: "paid",
+        paymentMethod: "coupon",
+        orderStatus: "confirmed",
+        idempotencyKey: key || undefined,
+      });
+
+      if (couponCode) {
+        await recordCouponUsage(couponCode);
+      }
+
+      if (key) {
+        idempotencyMap.set(key, { order: freeOrder, timestamp: Date.now() });
+      }
+
+      return NextResponse.json({
+        success: true,
+        order: freeOrder,
+        isFullyCoveredByCoupon: true,
+      });
+    }
+
+    // Standard Case: Remaining payment MUST be completed via Cashfree online payment
     const newOrder = await createOrder({
       userId: userId || "guest",
       customerName,
@@ -120,12 +158,6 @@ export async function POST(req: Request) {
       orderStatus: "pending_payment",
       idempotencyKey: key || undefined,
     });
-
-    if (couponCode) {
-      recordCouponUsage(couponCode).catch((err) =>
-        console.warn("Could not record coupon usage:", err)
-      );
-    }
 
     let paymentSessionId: string | undefined;
 

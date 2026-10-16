@@ -119,7 +119,7 @@ export interface Order {
   total: number;
   couponCode?: string;
   paymentStatus: "pending" | "paid" | "failed" | "refunded";
-  paymentMethod: "cashfree" | "razorpay" | "upi" | "card" | "cod";
+  paymentMethod: "cashfree" | "razorpay" | "upi" | "card" | "cod" | "coupon";
   paymentId?: string;
   orderStatus:
     | "pending_payment"

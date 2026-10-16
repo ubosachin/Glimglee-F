@@ -257,13 +257,29 @@ export default function AdminDashboardPage() {
             <h3 className="text-base font-bold text-stone-900">Live Orders Pipeline</h3>
             <p className="text-xs text-stone-500">Instant status updates trigger customer tracking updates.</p>
           </div>
-          <Link
-            href="/admin/orders"
-            className="text-xs font-bold text-rose-600 hover:underline flex items-center gap-1"
-          >
-            <span>View All Orders ({totalOrdersCount})</span>
-            <ArrowUpRight className="w-4 h-4" />
-          </Link>
+          <div className="flex flex-wrap items-center gap-3">
+            <Link
+              href="/admin/orders/confirmed"
+              className="text-xs font-bold text-emerald-600 hover:text-emerald-700 hover:underline flex items-center gap-1"
+            >
+              <span>Confirmed Orders</span>
+            </Link>
+            <span className="text-stone-300">•</span>
+            <Link
+              href="/admin/orders/cancelled-failed"
+              className="text-xs font-bold text-rose-600 hover:text-rose-700 hover:underline flex items-center gap-1"
+            >
+              <span>Failed/Cancelled</span>
+            </Link>
+            <span className="text-stone-300">•</span>
+            <Link
+              href="/admin/orders"
+              className="text-xs font-bold text-stone-700 hover:text-stone-900 hover:underline flex items-center gap-1"
+            >
+              <span>All ({totalOrdersCount})</span>
+              <ArrowUpRight className="w-4 h-4" />
+            </Link>
+          </div>
         </div>
 
         <div className="overflow-x-auto">

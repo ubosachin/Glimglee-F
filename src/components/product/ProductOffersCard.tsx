@@ -18,10 +18,19 @@ export const ProductOffersCard: React.FC<ProductOffersCardProps> = ({ className 
   const [modalOpen, setModalOpen] = useState(false);
 
   useEffect(() => {
-    getAvailableCoupons().then((list) => {
-      // Pick top 2 most attractive coupons for display
-      setCoupons(list.slice(0, 2));
-    });
+    const fetchOffers = () => {
+      getAvailableCoupons().then((list) => {
+        // Pick top 2 most attractive coupons for display
+        setCoupons(list.slice(0, 2));
+      });
+    };
+
+    fetchOffers();
+
+    window.addEventListener("glimglee_coupons_updated", fetchOffers);
+    return () => {
+      window.removeEventListener("glimglee_coupons_updated", fetchOffers);
+    };
   }, []);
 
   if (coupons.length === 0) return null;

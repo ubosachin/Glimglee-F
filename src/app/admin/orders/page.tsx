@@ -7,6 +7,7 @@ import { getOrders, updateOrderStatus, logAdminAction } from "@/lib/services/sto
 import { Order } from "@/lib/types";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { useToast } from "@/components/ui/Toast";
+import OrdersNavigationTabs from "@/components/admin/orders/OrdersNavigationTabs";
 import {
   ShoppingBag,
   Search,
@@ -30,6 +31,7 @@ export default function AdminOrdersPage() {
   const { toast } = useToast();
 
   const [orders, setOrders] = useState<Order[]>([]);
+  const [refreshing, setRefreshing] = useState(false);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [paymentFilter, setPaymentFilter] = useState<string>("all");
@@ -39,9 +41,29 @@ export default function AdminOrdersPage() {
   const PAGE_SIZE = 15;
   const [currentPage, setCurrentPage] = useState(1);
 
+  const fetchOrders = async () => {
+    try {
+      setRefreshing(true);
+      const data = await getOrders({ limitCount: 200 });
+      setOrders(data);
+    } catch (e) {
+      console.warn("Failed to fetch orders:", e);
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
   useEffect(() => {
-    // Fetch with reasonable limit to prevent unbounded collection scans
-    getOrders({ limitCount: 100 }).then(setOrders);
+    fetchOrders();
+
+    const handleUpdate = () => fetchOrders();
+    window.addEventListener("glimglee_orders_updated", handleUpdate);
+    window.addEventListener("focus", handleUpdate);
+
+    return () => {
+      window.removeEventListener("glimglee_orders_updated", handleUpdate);
+      window.removeEventListener("focus", handleUpdate);
+    };
   }, []);
 
   // Reset page when filter changes
@@ -101,6 +123,9 @@ export default function AdminOrdersPage() {
           </p>
         </div>
       </div>
+
+      {/* Sub-Navigation Tabs */}
+      <OrdersNavigationTabs onRefresh={fetchOrders} isRefreshing={refreshing} />
 
       {/* Filter and Search Bar */}
       <div className="bg-white p-4 rounded-2xl border border-stone-200/80 shadow-sm flex flex-col md:flex-row gap-4 justify-between text-xs">

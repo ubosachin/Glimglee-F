@@ -137,6 +137,9 @@ export default function AdminCouponsPage() {
       });
 
       setModalOpen(false);
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("glimglee_coupons_updated"));
+      }
       toast(`Coupon "${saved.code}" saved successfully!`, "success");
     } catch (err: any) {
       toast(err?.message || "Failed to save coupon", "error");
@@ -149,6 +152,9 @@ export default function AdminCouponsPage() {
     if (!confirm(`Are you sure you want to delete coupon "${code}"?`)) return;
     await deleteCoupon(id);
     setCoupons((prev) => prev.filter((c) => c.id !== id));
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new CustomEvent("glimglee_coupons_updated"));
+    }
     toast(`Deleted coupon "${code}"`, "info");
   };
 
@@ -156,6 +162,9 @@ export default function AdminCouponsPage() {
     const updated = { ...coupon, active: !coupon.active };
     await saveCoupon(updated);
     setCoupons((prev) => prev.map((c) => (c.id === coupon.id ? updated : c)));
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new CustomEvent("glimglee_coupons_updated"));
+    }
     toast(`Coupon "${coupon.code}" is now ${updated.active ? "Active" : "Inactive"}`, "info");
   };
 

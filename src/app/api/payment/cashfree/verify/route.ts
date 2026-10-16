@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { cashfreeService } from "@/lib/payment/cashfree";
 import { updateOrderStatus } from "@/lib/services/orders";
+import { recordCouponUsage } from "@/lib/services/coupons";
 
 export async function GET(req: Request) {
   const url = new URL(req.url);
@@ -14,13 +15,17 @@ export async function GET(req: Request) {
     const result = await cashfreeService.verifyOrderPayment(orderId);
 
     if (result.isPaid) {
-      // Update order in database
-      await updateOrderStatus(orderId, {
+      // Update order in database only after bank payment is verified
+      const confirmedOrder = await updateOrderStatus(orderId, {
         paymentStatus: "paid",
         orderStatus: "confirmed",
         paymentId: result.payment ? String(result.payment.cf_payment_id) : `cf_${orderId}`,
         paymentMethod: "cashfree",
       });
+
+      if (confirmedOrder?.couponCode) {
+        await recordCouponUsage(confirmedOrder.couponCode);
+      }
 
       return NextResponse.redirect(
         new URL(`/order-success/${encodeURIComponent(orderId)}`, req.url)
@@ -68,12 +73,16 @@ export async function POST(req: Request) {
     const result = await cashfreeService.verifyOrderPayment(orderId);
 
     if (result.isPaid) {
-      await updateOrderStatus(orderId, {
+      const confirmedOrder = await updateOrderStatus(orderId, {
         paymentStatus: "paid",
         orderStatus: "confirmed",
         paymentId: result.payment ? String(result.payment.cf_payment_id) : `cf_${orderId}`,
         paymentMethod: "cashfree",
       });
+
+      if (confirmedOrder?.couponCode) {
+        await recordCouponUsage(confirmedOrder.couponCode);
+      }
     } else {
       await updateOrderStatus(orderId, {
         paymentStatus: "failed",

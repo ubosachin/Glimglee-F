@@ -12,6 +12,9 @@ export async function GET(req: NextRequest) {
     const limit = parseInt(searchParams.get("limit") || "100", 10);
     const offset = parseInt(searchParams.get("offset") || "0", 10);
 
+    const paymentStatus = searchParams.get("paymentStatus");
+    const type = searchParams.get("type");
+
     if (!isMongoConfigured) {
       return NextResponse.json({ orders: [] });
     }
@@ -20,12 +23,16 @@ export async function GET(req: NextRequest) {
     const col = db.collection<Order>("orders");
 
     if (id || orderNumber) {
-      const queryId = id || orderNumber || "";
+      const rawId = (id || orderNumber || "").trim();
+      const withHash = rawId.startsWith("#") ? rawId : `#${rawId}`;
+      const withoutHash = rawId.replace(/^#/, "");
       const order = await col.findOne({
         $or: [
-          { id: queryId },
-          { orderNumber: queryId },
-          { orderNumber: `#${queryId}` },
+          { id: rawId },
+          { id: withoutHash },
+          { orderNumber: rawId },
+          { orderNumber: withHash },
+          { orderNumber: withoutHash },
         ],
       });
       return NextResponse.json({ order: order || null });
@@ -33,7 +40,22 @@ export async function GET(req: NextRequest) {
 
     const filter: any = {};
     if (userId) filter.userId = userId;
+    if (paymentStatus && paymentStatus !== "all") filter.paymentStatus = paymentStatus;
     if (status && status !== "all") filter.orderStatus = status;
+
+    if (type === "confirmed") {
+      filter.$or = [
+        { orderStatus: { $in: ["confirmed", "processing", "packed", "shipped", "out_for_delivery", "delivered"] } },
+        { paymentStatus: "paid", orderStatus: { $nin: ["cancelled", "pending_payment"] } },
+      ];
+    } else if (type === "cancelled-failed" || type === "failed") {
+      filter.$or = [
+        { orderStatus: "cancelled" },
+        { paymentStatus: "failed" },
+        { paymentStatus: "refunded" },
+        { orderStatus: "pending_payment", paymentStatus: { $ne: "paid" } },
+      ];
+    }
 
     const orders = await col
       .find(filter)
@@ -106,8 +128,20 @@ export async function PATCH(req: NextRequest) {
     const db = await getDb();
     const col = db.collection("orders");
 
+    const rawId = (id || "").trim();
+    const withHash = rawId.startsWith("#") ? rawId : `#${rawId}`;
+    const withoutHash = rawId.replace(/^#/, "");
+
     const result = await col.findOneAndUpdate(
-      { $or: [{ id }, { orderNumber: id }] },
+      {
+        $or: [
+          { id: rawId },
+          { id: withoutHash },
+          { orderNumber: rawId },
+          { orderNumber: withHash },
+          { orderNumber: withoutHash },
+        ],
+      },
       { $set: payload },
       { returnDocument: "after" }
     );

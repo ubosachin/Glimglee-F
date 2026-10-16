@@ -191,7 +191,16 @@ function CheckoutContent() {
         return;
       }
 
-      // 3. Handle Cashfree Online Checkout Flow (Only payment method accepted)
+      // 3. Special Case: Order 100% covered by coupon voucher (₹0 balance)
+      if (orderData.isFullyCoveredByCoupon) {
+        clearCart();
+        toast("Voucher discount applied! Order confirmed successfully.", "success");
+        router.push(`/order-success/${encodeURIComponent(orderData.order.id)}`);
+        return;
+      }
+
+      // 4. Handle Cashfree Online Checkout Flow for remaining amount
+      // The order remains in pending_payment status until bank payment is confirmed
       if (!orderData.paymentSessionId) {
         toast("Payment session could not be created. Please try again.", "error");
         setPaymentError("Could not initialize payment gateway. Your cart items are completely safe. Please try again.");

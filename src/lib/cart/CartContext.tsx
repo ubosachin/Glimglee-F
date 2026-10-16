@@ -96,20 +96,15 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     if (appliedCoupon) {
-      if (currentSubtotal < (appliedCoupon.minOrderValue || 0)) {
-        setAppliedCoupon(null);
-        setDiscountAmount(0);
-      } else {
-        if (appliedCoupon.discountType === "percentage") {
-          let disc = (currentSubtotal * appliedCoupon.discountValue) / 100;
-          if (appliedCoupon.maxDiscount && disc > appliedCoupon.maxDiscount) {
-            disc = appliedCoupon.maxDiscount;
-          }
-          setDiscountAmount(Math.round(disc));
+      validateCoupon(appliedCoupon.code, currentSubtotal).then((res) => {
+        if (res.valid && res.coupon) {
+          setAppliedCoupon(res.coupon);
+          setDiscountAmount(res.discountAmount);
         } else {
-          setDiscountAmount(Math.min(appliedCoupon.discountValue, currentSubtotal));
+          setAppliedCoupon(null);
+          setDiscountAmount(0);
         }
-      }
+      });
     } else if (!userDismissedCouponRef.current) {
       // Auto-apply best eligible coupon if conditions are met
       getAutoApplicableCoupon(currentSubtotal).then((res) => {
@@ -119,7 +114,44 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
       });
     }
-  }, [items, isLoaded, appliedCoupon]);
+  }, [items, isLoaded, appliedCoupon?.code]);
+
+  // Real-time synchronization when coupons are updated by admin or in database
+  useEffect(() => {
+    const handleCouponsSync = () => {
+      const currentSubtotal = items.reduce(
+        (sum, item) => sum + item.product.price * item.quantity,
+        0
+      );
+      if (currentSubtotal === 0) return;
+
+      if (appliedCoupon) {
+        validateCoupon(appliedCoupon.code, currentSubtotal).then((res) => {
+          if (res.valid && res.coupon) {
+            setAppliedCoupon(res.coupon);
+            setDiscountAmount(res.discountAmount);
+          } else {
+            setAppliedCoupon(null);
+            setDiscountAmount(0);
+          }
+        });
+      } else if (!userDismissedCouponRef.current) {
+        getAutoApplicableCoupon(currentSubtotal).then((res) => {
+          if (res && res.valid && res.coupon) {
+            setAppliedCoupon(res.coupon);
+            setDiscountAmount(res.discountAmount);
+          }
+        });
+      }
+    };
+
+    window.addEventListener("glimglee_coupons_updated", handleCouponsSync);
+    window.addEventListener("focus", handleCouponsSync);
+    return () => {
+      window.removeEventListener("glimglee_coupons_updated", handleCouponsSync);
+      window.removeEventListener("focus", handleCouponsSync);
+    };
+  }, [items, appliedCoupon?.code]);
 
   const itemCount = useMemo(
     () => items.reduce((sum, item) => sum + item.quantity, 0),
