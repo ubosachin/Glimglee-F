@@ -45,8 +45,8 @@ export async function GET(req: NextRequest) {
 
     if (type === "confirmed") {
       filter.$or = [
-        { orderStatus: { $in: ["confirmed", "processing", "packed", "shipped", "out_for_delivery", "delivered"] } },
-        { paymentStatus: "paid", orderStatus: { $nin: ["cancelled", "pending_payment"] } },
+        { orderStatus: { $nin: ["cancelled", "pending_payment"] } },
+        { paymentStatus: "paid", orderStatus: { $ne: "cancelled" } },
       ];
     } else if (type === "cancelled-failed" || type === "failed") {
       filter.$or = [
@@ -98,7 +98,8 @@ export async function POST(req: NextRequest) {
     const db = await getDb();
     const col = db.collection("orders");
 
-    await col.updateOne({ id }, { $set: payload }, { upsert: true });
+    const { _id: _pId, ...safePayload } = payload as any;
+    await col.updateOne({ id }, { $set: safePayload }, { upsert: true });
 
     return NextResponse.json({ success: true, order: payload });
   } catch (err: any) {
@@ -110,7 +111,7 @@ export async function POST(req: NextRequest) {
 export async function PATCH(req: NextRequest) {
   try {
     const body = await req.json();
-    const { id, ...updates } = body;
+    const { id, _id, ...updates } = body;
 
     if (!id) {
       return NextResponse.json({ error: "Order id is required" }, { status: 400 });

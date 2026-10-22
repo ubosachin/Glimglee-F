@@ -64,9 +64,22 @@ export default function CancelledFailedOrdersPage() {
   const fetchOrders = async () => {
     try {
       setRefreshing(true);
-      const data = await getOrders({ type: "cancelled-failed", limitCount: 200 });
+      let data = await getOrders({ type: "cancelled-failed", limitCount: 200 });
+
+      // Fallback: If type filter returned empty but orders exist in pipeline, fetch all and filter client-side
+      if (!data || data.length === 0) {
+        const all = await getOrders({ limitCount: 200 });
+        data = all.filter(
+          (o) =>
+            o.orderStatus === "cancelled" ||
+            o.paymentStatus === "failed" ||
+            o.paymentStatus === "refunded" ||
+            (o.orderStatus === "pending_payment" && o.paymentStatus !== "paid")
+        );
+      }
+
       // Filter for cancelled, failed, or unpaid pending orders
-      const failedList = data.filter(
+      const failedList = (data || []).filter(
         (o) =>
           o.orderStatus === "cancelled" ||
           o.paymentStatus === "failed" ||
@@ -126,11 +139,11 @@ export default function CancelledFailedOrdersPage() {
       const q = search.toLowerCase().trim();
       const matchSearch =
         !q ||
-        o.orderNumber.toLowerCase().includes(q) ||
-        o.customerName.toLowerCase().includes(q) ||
-        o.customerEmail.toLowerCase().includes(q) ||
-        o.customerPhone.includes(q) ||
-        o.shippingAddress.city.toLowerCase().includes(q);
+        (o.orderNumber && o.orderNumber.toLowerCase().includes(q)) ||
+        (o.customerName && o.customerName.toLowerCase().includes(q)) ||
+        (o.customerEmail && o.customerEmail.toLowerCase().includes(q)) ||
+        (o.customerPhone && o.customerPhone.includes(q)) ||
+        (o.shippingAddress?.city && o.shippingAddress.city.toLowerCase().includes(q));
 
       const issueType = getOrderIssueType(o);
       const matchIssue =
@@ -140,7 +153,7 @@ export default function CancelledFailedOrdersPage() {
         (issueFilter === "cancelled" && issueType === "cancelled") ||
         (issueFilter === "refunded" && issueType === "refunded");
 
-      return matchSearch && matchIssue;
+      return Boolean(matchSearch && matchIssue);
     });
   }, [orders, search, issueFilter]);
 

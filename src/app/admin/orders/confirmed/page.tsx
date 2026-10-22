@@ -74,9 +74,20 @@ export default function ConfirmedOrdersPage() {
   const fetchOrders = async () => {
     try {
       setRefreshing(true);
-      const data = await getOrders({ type: "confirmed", limitCount: 200 });
+      let data = await getOrders({ type: "confirmed", limitCount: 200 });
+
+      // Fallback: If type filter returned empty but orders exist in pipeline, fetch all and filter client-side
+      if (!data || data.length === 0) {
+        const all = await getOrders({ limitCount: 200 });
+        data = all.filter(
+          (o) =>
+            (o.orderStatus !== "cancelled" && o.orderStatus !== "pending_payment") ||
+            (o.paymentStatus === "paid" && o.orderStatus !== "cancelled")
+        );
+      }
+
       // Ensure only confirmed / active orders are displayed
-      const confirmedOnly = data.filter(
+      const confirmedOnly = (data || []).filter(
         (o) =>
           (o.orderStatus !== "cancelled" && o.orderStatus !== "pending_payment") ||
           (o.paymentStatus === "paid" && o.orderStatus !== "cancelled")
@@ -125,17 +136,17 @@ export default function ConfirmedOrdersPage() {
       const q = search.toLowerCase().trim();
       const matchSearch =
         !q ||
-        o.orderNumber.toLowerCase().includes(q) ||
-        o.customerName.toLowerCase().includes(q) ||
-        o.customerEmail.toLowerCase().includes(q) ||
-        o.customerPhone.includes(q) ||
-        o.shippingAddress.city.toLowerCase().includes(q) ||
-        o.shippingAddress.pincode.includes(q);
+        (o.orderNumber && o.orderNumber.toLowerCase().includes(q)) ||
+        (o.customerName && o.customerName.toLowerCase().includes(q)) ||
+        (o.customerEmail && o.customerEmail.toLowerCase().includes(q)) ||
+        (o.customerPhone && o.customerPhone.includes(q)) ||
+        (o.shippingAddress?.city && o.shippingAddress.city.toLowerCase().includes(q)) ||
+        (o.shippingAddress?.pincode && o.shippingAddress.pincode.includes(q));
 
       const matchStage = stageFilter === "all" || o.orderStatus === stageFilter;
       const matchPayment = paymentFilter === "all" || o.paymentStatus === paymentFilter;
 
-      return matchSearch && matchStage && matchPayment;
+      return Boolean(matchSearch && matchStage && matchPayment);
     });
   }, [orders, search, stageFilter, paymentFilter]);
 

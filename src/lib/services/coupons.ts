@@ -364,9 +364,10 @@ export async function saveCoupon(coupon: Partial<Coupon> & { id?: string }): Pro
       const { getDb, isMongoConfigured } = await import("@/lib/mongodb/client");
       if (isMongoConfigured) {
         const db = await getDb();
+        const { _id, ...safeCoupon } = fullCoupon as any;
         await db.collection("coupons").updateOne(
           { id },
-          { $set: fullCoupon },
+          { $set: safeCoupon },
           { upsert: true }
         );
       }
@@ -403,7 +404,9 @@ export async function deleteCoupon(id: string): Promise<boolean> {
       const { getDb, isMongoConfigured } = await import("@/lib/mongodb/client");
       if (isMongoConfigured) {
         const db = await getDb();
-        await db.collection("coupons").deleteOne({ id });
+        await db.collection("coupons").deleteOne({
+          $or: [{ id }, { code: id.trim().toUpperCase() }],
+        });
       }
     } catch (e) {
       console.warn("Direct mongo deleteCoupon error:", e);

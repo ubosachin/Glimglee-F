@@ -29,7 +29,11 @@ export async function GET(req: NextRequest) {
     const count = await col.countDocuments();
     if (count === 0) {
       try {
-        await col.insertMany(DEFAULT_COUPONS as any);
+        const freshDefaults = DEFAULT_COUPONS.map((c) => {
+          const { _id, ...rest } = c as any;
+          return rest;
+        });
+        await col.insertMany(freshDefaults as any);
       } catch (seedErr) {
         console.warn("Coupon seeding error:", seedErr);
       }
@@ -90,7 +94,8 @@ export async function POST(req: NextRequest) {
     const db = await getDb();
     const col = db.collection("coupons");
 
-    await col.updateOne({ id }, { $set: payload }, { upsert: true });
+    const { _id, ...safePayload } = payload as any;
+    await col.updateOne({ id }, { $set: safePayload }, { upsert: true });
 
     return NextResponse.json({ success: true, coupon: payload });
   } catch (err: any) {
@@ -101,9 +106,10 @@ export async function POST(req: NextRequest) {
 
 export async function DELETE(req: NextRequest) {
   try {
-    const { id } = await req.json();
-    if (!id) {
-      return NextResponse.json({ error: "Coupon id is required" }, { status: 400 });
+    const body = await req.json();
+    const target = body.id || body.code;
+    if (!target) {
+      return NextResponse.json({ error: "Coupon id or code is required" }, { status: 400 });
     }
 
     if (!isMongoConfigured) {
@@ -111,7 +117,9 @@ export async function DELETE(req: NextRequest) {
     }
 
     const db = await getDb();
-    await db.collection("coupons").deleteOne({ id });
+    await db.collection("coupons").deleteOne({
+      $or: [{ id: target }, { code: target.toString().trim().toUpperCase() }],
+    });
 
     return NextResponse.json({ success: true });
   } catch (err: any) {

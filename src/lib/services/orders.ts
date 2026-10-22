@@ -60,8 +60,8 @@ export async function getOrders(optionsOrStatus?: OrderQueryOptions | string): P
 
         if (type === "confirmed") {
           filter.$or = [
-            { orderStatus: { $in: ["confirmed", "processing", "packed", "shipped", "out_for_delivery", "delivered"] } },
-            { paymentStatus: "paid", orderStatus: { $nin: ["cancelled", "pending_payment"] } },
+            { orderStatus: { $nin: ["cancelled", "pending_payment"] } },
+            { paymentStatus: "paid", orderStatus: { $ne: "cancelled" } },
           ];
         } else if (type === "cancelled-failed") {
           filter.$or = [
@@ -311,9 +311,10 @@ export async function createOrder(orderData: Partial<Order>): Promise<Order> {
       const { getDb, isMongoConfigured } = await import("@/lib/mongodb/client");
       if (isMongoConfigured) {
         const db = await getDb();
+        const { _id, ...safeOrder } = fullOrder as any;
         await db.collection("orders").updateOne(
           { id },
-          { $set: fullOrder },
+          { $set: safeOrder },
           { upsert: true }
         );
       }
@@ -378,6 +379,7 @@ export async function updateOrderStatus(
         const rawId = (id || "").trim();
         const withHash = rawId.startsWith("#") ? rawId : `#${rawId}`;
         const withoutHash = rawId.replace(/^#/, "");
+        const { _id, ...safePayload } = updatePayload as any;
 
         const res = await db.collection<Order>("orders").findOneAndUpdate(
           {
@@ -389,7 +391,7 @@ export async function updateOrderStatus(
               { orderNumber: withoutHash },
             ],
           },
-          { $set: updatePayload },
+          { $set: safePayload },
           { returnDocument: "after" }
         );
         if (res) {

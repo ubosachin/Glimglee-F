@@ -39,8 +39,26 @@ export default function AdminCouponsPage() {
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
+  const loadCoupons = async () => {
+    try {
+      const data = await getCoupons();
+      setCoupons(data);
+    } catch (e) {
+      console.warn("Failed to load coupons:", e);
+    }
+  };
+
   useEffect(() => {
-    getCoupons().then(setCoupons);
+    loadCoupons();
+
+    const handleUpdate = () => loadCoupons();
+    window.addEventListener("glimglee_coupons_updated", handleUpdate);
+    window.addEventListener("focus", handleUpdate);
+
+    return () => {
+      window.removeEventListener("glimglee_coupons_updated", handleUpdate);
+      window.removeEventListener("focus", handleUpdate);
+    };
   }, []);
 
   const handleCopy = (code: string) => {
@@ -151,7 +169,7 @@ export default function AdminCouponsPage() {
   const handleDelete = async (id: string, code: string) => {
     if (!confirm(`Are you sure you want to delete coupon "${code}"?`)) return;
     await deleteCoupon(id);
-    setCoupons((prev) => prev.filter((c) => c.id !== id));
+    setCoupons((prev) => prev.filter((c) => c.id !== id && c.code !== code));
     if (typeof window !== "undefined") {
       window.dispatchEvent(new CustomEvent("glimglee_coupons_updated"));
     }
